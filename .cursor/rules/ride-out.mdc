@@ -1,0 +1,58 @@
+---
+description: Ride Out project rules — stack, design source, data access and security
+alwaysApply: true
+---
+
+# Ride Out — project rules
+
+## Read first
+- Product scope: docs/01-product-scope.md
+- Architecture and folders: docs/02-architecture.md
+- Data model and status pipelines: docs/03-data-model.md, supabase/migrations/
+- Route ↔ Figma frame map: docs/04-routes-and-screens.md
+- Build order: docs/06-build-plan.md
+- Unresolved decisions: docs/07-open-questions.md. Use the listed default and leave a `// TODO(Qn)` comment
+
+## Design source
+- Figma file key: `dmoIAsFN5cXluPaEzqWPzC`. Before building any screen, call `get_design_context` on the node ID listed in docs/04.
+- Never build from the "Bin" page (`1:3`).
+- Take colours, fonts and spacing from Figma variables (Assets page `4:723`). Never guess hex values. If a token is missing, ask.
+- Match the 1440 px desktop and 390 px mobile frames. Build mobile-first.
+- Copy text exactly from Figma. Don't rewrite headings or button labels.
+
+## Website content (CMS)
+- Never hard-code marketing copy or images on public pages. Add the field to `src/features/cms/registry.ts`, with the exact Figma text as its default, and read it with `getPageContent('<page>')`.
+- Form labels, validation messages, status names and admin UI text stay in code (next-intl messages), not the CMS.
+- Each registry text field needs `maxLength` = Figma default length × 1.3, rounded up to the next 5.
+- Render rich text only through the shared Tiptap renderer. Never use `dangerouslySetInnerHTML` with stored content.
+- Publishing must go through the `publish_content_page` RPC, then `updateTag('cms:<page>')` in the same Server Action. Outside a Server Action use `revalidateTag(tag, 'max')`. The one-argument form is deprecated.
+- Public CMS reads use `'use cache'` + `cacheTag('cms:<page>')` + `cacheLife('max')` and the cookie-free client in `@/lib/supabase/public`. Cached functions can't read cookies or headers. Draft preview reads the draft through an uncached admin-checked path.
+- Full spec: docs/08-cms.md
+
+## Stack
+- Next.js App Router, TypeScript strict, Server Components by default. Add `"use client"` only for interactivity.
+- UI: shadcn/ui components from `@/components/ui`, styled with Tailwind CSS and the CSS variables in `globals.css`. No other component libraries and no CSS-in-JS. Plain CSS is fine in `globals.css` for things Tailwind can't express.
+- Forms: react-hook-form + zod. Put the schema in `src/features/<domain>/schema.ts` and reuse it in the server action. Build each field with shadcn `Field` / `FieldLabel` / `FieldError` around react-hook-form's `Controller`. The old shadcn `<Form>` / `FormField` wrapper does not exist (`npx shadcn add form` installs nothing).
+- shadcn style is `radix-nova` (Radix primitives). Don't add Base UI components.
+- Mutations: Server Actions in `src/features/<domain>/actions.ts`. No API routes except `/auth/callback` and `/api/preview` (CMS draft mode).
+- Icons: lucide-react.
+- Dates: date-fns. Money: `formatGHS()` from `src/lib/format.ts`. Store money as numeric GHS.
+
+## Data access and security
+- Use `@/lib/supabase/server` in Server Components and actions, and `@/lib/supabase/client` in client components.
+- Next.js is v16: the request-interception file is `src/proxy.ts` (`export function proxy`), not `middleware.ts`. Read `AGENTS.md` and the docs bundled in `node_modules/next/dist/docs/` before writing code that touches routing, caching or file conventions.
+- Cache Components is on (`cacheComponents: true` in `next.config.ts`). Request-time data (`searchParams`, `cookies()`, `headers()`, `draftMode()`) can't be read inside `'use cache'`: read it outside, pass values in as arguments, and wrap the dynamic part in `<Suspense>` with a skeleton. See `node_modules/next/dist/docs/01-app/01-getting-started/08-caching.md`.
+- Supabase keys: `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (browser) and `SUPABASE_SECRET_KEY` (server). Don't use the legacy `anon` / `service_role` keys.
+- Identify the signed-in user on the server with `supabase.auth.getClaims()`. Never use `getSession()` for authorization.
+- `@/lib/supabase/admin` (secret key) is only for: guest form submissions, private file uploads, and creating signed URLs for admins. It must start with `import 'server-only'`.
+- Every server action checks: zod parse → Turnstile (public forms) → auth/role (admin actions) → write.
+- Admin actions re-check `is_admin` on the server. Never trust a hidden field or client state.
+- Ghana Card images and sell-car photos go to private buckets. Show them only through signed URLs that expire in 60 seconds or less. Never log ID numbers.
+- Status labels, step order and admin tab grouping come only from `src/lib/status.ts`. Don't hard-code status strings in components.
+- After changing SQL, add a new migration file. Never edit an applied one. Regenerate `database.types.ts`.
+
+## Code style
+- Folder per domain under `src/features/`: `queries.ts` (reads), `actions.ts` (writes), `schema.ts` (zod), `components/`.
+- Name components in PascalCase and files in kebab-case.
+- Every list page handles loading (Skeleton), empty state (use the Figma empty state where one exists) and error states.
+- Every form shows inline field errors and a toast (sonner) on server error, and the Figma success modal on success.
