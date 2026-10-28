@@ -43,7 +43,7 @@ Design source: Figma file `dmoIAsFN5cXluPaEzqWPzC` ("Ride Out - Client File").
 | | Anything else we should know? | Textarea | No |
 | 3. Contact details | Full name | Text | Yes |
 | | Phone / WhatsApp | Phone | Yes |
-| | Email | Email | No |
+| | Email | Email | Yes |
 | Review modal | "I have read and agree to the Ride Out Client Policy" | Checkbox | Yes |
 
 **Sell your car (frames `1:3916`, `1:4006`, `1:4039`, `1:4128`)**
@@ -53,13 +53,13 @@ Design source: Figma file `dmoIAsFN5cXluPaEzqWPzC` ("Ride Out - Client File").
 | 1. Tell us about your car | Brand, Model, Year, Mileage (km), Transmission (select), Fuel (select), Vehicle condition (select), Exterior colour |
 | 2. Vehicle pricing | Asking price (GHS), Negotiable? (select "price flexibility"), Minimum acceptable price (GHS) |
 | 3. Add your photos | 9 upload slots: exterior, interior, dashboard, engine, tyres, any damage |
-| 4. Your details | Full name\*, Phone / WhatsApp\*, Email |
+| 4. Your details | Full name\*, Phone / WhatsApp\*, Email\* |
 
 **Rent: Request this car (modal `1:4829`)**
-Full name\*, Phone / WhatsApp\*, Email, Ghana Card photo upload, Ghana Card number (`GHA-` prefix). Pickup address, pickup date and return date come from the Rent search bar (`1:4420`).
+Full name\*, Phone / WhatsApp\*, Email\*, Ghana Card photo upload, Ghana Card number (`GHA-` prefix). Pickup address, pickup date and return date come from the Rent search bar (`1:4420`).
 
 **Car detail: I'm Interested (`1:3568`)**
-First name, Last name, Phone, Email.
+First name, Last name, Phone\*, Email\*. Email is required even when the Figma frame does not show an asterisk: it is how a later sign-up finds this request.
 
 **Contact (`1:5103`)**
 Full name\*, Phone / WhatsApp\*, Email, Message.

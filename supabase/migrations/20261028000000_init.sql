@@ -3,6 +3,8 @@
 -- Values marked "PROPOSED" are not visible in the design yet; confirm with the client (see docs/07-open-questions.md).
 
 create extension if not exists pgcrypto;
+-- uuid equality inside the rental overlap constraint
+create extension if not exists btree_gist;
 
 -- ---------------------------------------------------------------------------
 -- Enums
@@ -11,8 +13,7 @@ create type public.user_role as enum ('customer', 'admin', 'super_admin');
 
 create type public.listing_purpose as enum ('sale', 'rent');
 create type public.listing_status as enum ('draft', 'published', 'hidden');
--- available: dashboard KPI card. booked / rented / unavailable / under_maintenance: "Availability check" panel (120:6634).
--- sold: PROPOSED for sale listings. Confirm the full list against the status dialog (120:4579).
+-- Locked (Q9): available, booked, rented, under_maintenance, unavailable, plus sold for sale listings.
 create type public.availability_status as enum ('available', 'booked', 'rented', 'sold', 'under_maintenance', 'unavailable');
 
 create type public.vehicle_condition as enum ('brand_new', 'used');
@@ -27,17 +28,17 @@ create type public.budget_covers as enum ('purchase_only', 'purchase_and_import'
 -- Website step 1 of the import form + "I'm Interested" on a listed car.
 create type public.order_service_type as enum ('find_and_purchase', 'import_found_car', 'listing_purchase');
 
--- Import / sourcing pipeline (customer view 130:18303 shows 8 steps; admin view 120:5440 shows 7 — see open questions)
--- followed by the listing-purchase pipeline (130:18415). "cancelled" is PROPOSED.
+-- Import pipeline includes customs_clearance (Q2, locked). Listing-purchase statuses are separate.
+-- A check constraint rejects mixing the two. cancelled is locked (Q12).
 create type public.order_status as enum (
   'enquiry', 'reviewing', 'confirmed', 'sourcing', 'purchased', 'in_transit', 'customs_clearance', 'delivered',
   'inquiry_received', 'availability_confirmed', 'purchase_arrangements', 'vehicle_handover',
   'cancelled'
 );
 
--- Rental pipeline (130:18484). "cancelled" is PROPOSED.
+-- Rental pipeline (130:18484). cancelled is locked (Q12) and does not block dates.
 create type public.rental_status as enum ('inquiry_received', 'confirmed', 'ready_for_pickup', 'active', 'returned', 'cancelled');
--- "self_drive" is in the design; "with_driver" is PROPOSED (design says "agree on ... driver option").
+-- Q11, locked: with_driver exists and has no extra price column.
 create type public.driver_option as enum ('self_drive', 'with_driver');
 
 create type public.submission_status as enum ('new', 'in_review', 'closed');
@@ -77,6 +78,8 @@ create table public.profiles (
 );
 create trigger profiles_updated_at before update on public.profiles
   for each row execute function public.set_updated_at();
+-- One account per email. Phone is not an identity.
+create unique index profiles_email_unique on public.profiles (lower(email)) where email is not null;
 
 -- Admin check used by every RLS policy. security definer so it can read profiles under RLS.
 create or replace function public.is_admin() returns boolean
@@ -87,12 +90,28 @@ language sql stable security definer set search_path = public as $$
   );
 $$;
 
--- Create a profile row whenever someone signs up (email/password or Google).
+-- Create a profile row whenever someone signs up (email/password or Google),
+-- then attach any guest customer row that already uses that email.
+-- Phone is never used to merge people.
 create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
+declare
+  normalized_email text := lower(trim(new.email));
 begin
   insert into public.profiles (id, email, full_name)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name'));
+  values (
+    new.id,
+    normalized_email,
+    coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name')
+  );
+
+  if normalized_email is not null then
+    update public.customers
+    set user_id = new.id
+    where user_id is null
+      and email = normalized_email;
+  end if;
+
   return new;
 end;
 $$;
@@ -100,26 +119,57 @@ create trigger on_auth_user_created after insert on auth.users
   for each row execute function public.handle_new_user();
 
 -- ---------------------------------------------------------------------------
--- Customers (CRM record). Guests who submit a form get a customer row with user_id = null;
--- it is linked to their account when they sign up with the same email.
+-- Customers (CRM record). Guests who submit a form get a customer row with user_id = null.
+-- Email is required and unique. A later sign-up with that email links the row
+-- (see handle_new_user). A customer created after the account already exists
+-- is linked here. Phone is contact information only.
 -- ---------------------------------------------------------------------------
 create table public.customers (
   id uuid primary key default gen_random_uuid(),
   code text not null unique default ('CUS-' || nextval('public.customer_code_seq')),
   user_id uuid unique references auth.users (id) on delete set null,
   full_name text not null,
-  email text,
+  email text not null,
   phone text,
   location text,
   acquisition_source text not null default 'website',
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint customers_email_shape check (
+    email = lower(email)
+    and email !~ '[[:space:]]'
+    and email ~ '^[^@]+@[^@]+\.[^@]+$'
+  )
 );
-create index customers_email_idx on public.customers (lower(email));
+create unique index customers_email_unique on public.customers (email);
 create index customers_phone_idx on public.customers (phone);
 create trigger customers_updated_at before update on public.customers
   for each row execute function public.set_updated_at();
+
+create or replace function public.normalize_and_link_customer() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  matched uuid;
+begin
+  new.email = lower(trim(new.email));
+
+  if new.user_id is null then
+    select id into matched
+    from auth.users
+    where lower(email) = new.email
+    limit 1;
+    if matched is not null then
+      new.user_id = matched;
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+create trigger customers_normalize_and_link
+  before insert or update of email, user_id on public.customers
+  for each row execute function public.normalize_and_link_customer();
 
 -- ---------------------------------------------------------------------------
 -- Vehicles (inventory for sale and for rent)
@@ -153,7 +203,7 @@ create table public.vehicles (
   accident_history text,
   inspection_status text,
 
-  -- Money is stored in GHS with 2 decimals.
+  -- Ride Out's own prices are cedis.
   sale_price numeric(12, 2) check (sale_price >= 0),
   rental_daily_rate numeric(12, 2) check (rental_daily_rate >= 0),
   rental_security_deposit numeric(12, 2) check (rental_security_deposit >= 0),
@@ -210,7 +260,8 @@ create table public.vehicle_orders (
   requested_year_range text,
   condition_preference public.condition_preference,
   budget_amount numeric(12, 2) check (budget_amount >= 0),
-  budget_currency char(3) not null default 'GHS',
+  -- The currency the customer picked. Independent of Ride Out's cedis prices.
+  budget_currency char(3) not null default 'GHS' check (budget_currency ~ '^[A-Z]{3}$'),
   budget_covers public.budget_covers,
   transmission_preference public.transmission_preference,
   fuel_preference public.fuel_preference,
@@ -221,6 +272,8 @@ create table public.vehicle_orders (
   vehicle_title text,
   vehicle_origin text,
   estimated_price numeric(12, 2) check (estimated_price >= 0),
+  -- Staff quotes stay in cedis, even when the customer's budget is in another currency.
+  estimated_price_currency char(3) not null default 'GHS' check (estimated_price_currency = 'GHS'),
   estimated_arrival_date date,
   latest_update_title text,
   latest_update_body text,
@@ -228,7 +281,23 @@ create table public.vehicle_orders (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 
-  constraint vehicle_orders_listing_has_vehicle check (service_type <> 'listing_purchase' or vehicle_id is not null)
+  constraint vehicle_orders_listing_has_vehicle check (service_type <> 'listing_purchase' or vehicle_id is not null),
+  constraint vehicle_orders_status_matches_service check (
+    (
+      service_type in ('find_and_purchase', 'import_found_car')
+      and status in (
+        'enquiry', 'reviewing', 'confirmed', 'sourcing', 'purchased',
+        'in_transit', 'customs_clearance', 'delivered', 'cancelled'
+      )
+    )
+    or (
+      service_type = 'listing_purchase'
+      and status in (
+        'inquiry_received', 'availability_confirmed', 'purchase_arrangements',
+        'vehicle_handover', 'cancelled'
+      )
+    )
+  )
 );
 create index vehicle_orders_status_idx on public.vehicle_orders (status, created_at desc);
 create index vehicle_orders_customer_idx on public.vehicle_orders (customer_id);
@@ -272,7 +341,13 @@ create table public.rental_bookings (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 
-  constraint rental_bookings_dates check (return_date > pickup_date)
+  constraint rental_bookings_dates check (return_date > pickup_date),
+  -- Return date is exclusive, matching rental_days = return_date - pickup_date.
+  -- Enquiries, returned bookings, and cancellations do not block the car.
+  constraint rental_bookings_no_overlap exclude using gist (
+    vehicle_id with =,
+    daterange(pickup_date, return_date, '[)') with &&
+  ) where (status in ('confirmed', 'ready_for_pickup', 'active'))
 );
 create index rental_bookings_status_idx on public.rental_bookings (status, pickup_date);
 create index rental_bookings_vehicle_idx on public.rental_bookings (vehicle_id, pickup_date, return_date);

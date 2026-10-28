@@ -22,7 +22,7 @@ Every prompt assumes Cursor has the Figma MCP connected and reads `.cursor/rules
 | Task | Prompt hint | Done when |
 |---|---|---|
 | 1.1 | Sign up, log in, forgot/reset password, verify email from section 120:9658 | Email and Google sign-in both work. Profile row is created |
-| 1.2 | On sign-up, link any `customers` row with the same email (server action) | A guest who signs up sees their earlier requests |
+| 1.2 | Confirm a guest `customers` row with the same email is linked by the sign-up trigger in the init migration. Do not match on phone | A guest who signs up sees their earlier requests |
 | 1.3 | Seed the Super Admin per docs/05-setup.md step 7 | The admin can reach /admin |
 
 ## Phase 2 — Inventory: admin first, then public (≈5 days)
@@ -35,7 +35,7 @@ Every prompt assumes Cursor has the Figma MCP connected and reads `.cursor/rules
 | 2.4 | `/buy` listing with filters and sort, from URL search params (1:3047). Server-rendered | Filters are shareable by URL |
 | 2.5 | `/buy/[slug]` detail with gallery, specs, condition card, save button (1:3568) | Matches design at 1440 and 390 px |
 | 2.6 | Homepage (1:476): hero search goes to `/buy?brand=…&model=…&budget=…`. Featured cars come from `vehicles.is_featured` (add a "Feature on homepage" toggle + order to the vehicle form). All copy and images come from `getPageContent('home')` | Hero search works. Featured cars follow the admin toggle |
-| 2.7 | `/rent` + `/rent/[slug]` (1:4420, 1:4175) | Date search filters out cars that already have overlapping confirmed or active bookings |
+| 2.7 | `/rent` + `/rent/[slug]` (1:4420, 1:4175) | Date search filters out cars that already have an overlapping confirmed, ready-for-pickup, or active booking. The database constraint rejects a double book even if the query is skipped |
 
 ## Phase 3 — Requests: customer side (≈5 days)
 
@@ -58,7 +58,7 @@ Every form: zod schema in `features/<domain>/schema.ts`, server action in `actio
 | 4.1 Dashboard KPIs | 120:645 | Numbers match the queries in docs/03 |
 | 4.2 Vehicle Orders list + tabs + detail + status update + internal notes + new enquiry dialog | 120:4877 section | A status change shows on the customer's tracker straight away |
 | 4.3 Rental Bookings list + tabs + detail + confirm + status + notes + add booking | 120:6126 section | Subtotal = daily rate × days. Ghana Card opens through a signed URL |
-| 4.3b "Check vehicle availability" on booking detail | 120:6634 | Flags an overlap with another confirmed or active booking, or a vehicle that is not `available` |
+| 4.3b "Check vehicle availability" on booking detail | 120:6634 | Flags an overlap with another confirmed, ready-for-pickup, or active booking, or a vehicle that is not `available` |
 | 4.4 Customers list + profile tabs + add customer | 120:6942 section | Customer shows all their orders and bookings |
 | 4.5 Settings: business, vehicle & rental defaults, notifications, account & security | 120:7602 section | Saved values persist. Password change works |
 | 4.6 Email notifications respect `notification_preferences` | – | An admin who turns off an event stops getting that email |

@@ -148,7 +148,7 @@ Field types: **T** = short text, **P** = paragraph, **B** = button label, **I** 
 
 ## 5. Database
 
-Migration: [`supabase/migrations/20261028000100_cms.sql`](../supabase/migrations/20261028000100_cms.sql). It's tested: 15 checks covering draft privacy, admin-only publish, stale-edit protection, revisions and restore, and media rules.
+Migration: [`supabase/migrations/20261028000100_cms.sql`](../supabase/migrations/20261028000100_cms.sql). It applies with the init migration in the local locked-rules run. Separate checks for draft privacy, publish, stale edits, restore, and media rules are not in the repo yet.
 
 | Object | Purpose |
 |---|---|

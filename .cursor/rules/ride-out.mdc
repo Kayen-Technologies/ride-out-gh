@@ -36,7 +36,7 @@ alwaysApply: true
 - shadcn style is `radix-nova` (Radix primitives). Don't add Base UI components.
 - Mutations: Server Actions in `src/features/<domain>/actions.ts`. No API routes except `/auth/callback` and `/api/preview` (CMS draft mode).
 - Icons: lucide-react.
-- Dates: date-fns. Money: `formatGHS()` from `src/lib/format.ts`. Store money as numeric GHS.
+- Dates: date-fns. Ride Out prices are cedis, formatted with `formatGHS()` from `src/lib/format.ts`. A customer's budget keeps `budget_currency` and is formatted with `formatMoney()`. Store amounts as numeric.
 
 ## Data access and security
 - Use `@/lib/supabase/server` in Server Components and actions, and `@/lib/supabase/client` in client components.
@@ -44,6 +44,7 @@ alwaysApply: true
 - Cache Components is on (`cacheComponents: true` in `next.config.ts`). Request-time data (`searchParams`, `cookies()`, `headers()`, `draftMode()`) can't be read inside `'use cache'`: read it outside, pass values in as arguments, and wrap the dynamic part in `<Suspense>` with a skeleton. See `node_modules/next/dist/docs/01-app/01-getting-started/08-caching.md`.
 - Supabase keys: `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (browser) and `SUPABASE_SECRET_KEY` (server). Don't use the legacy `anon` / `service_role` keys.
 - Identify the signed-in user on the server with `supabase.auth.getClaims()`. Never use `getSession()` for authorization.
+- Match customers by normalized email only. Phone never merges two people. Guest requests link to an account in the sign-up database trigger.
 - `@/lib/supabase/admin` (secret key) is only for: guest form submissions, private file uploads, and creating signed URLs for admins. It must start with `import 'server-only'`.
 - Every server action checks: zod parse → Turnstile (public forms) → auth/role (admin actions) → write.
 - Admin actions re-check `is_admin` on the server. Never trust a hidden field or client state.
