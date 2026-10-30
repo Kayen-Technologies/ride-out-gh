@@ -26,6 +26,7 @@
   --color-surface-raised: var(--surface-raised);
   --color-text-70: var(--text-70);
   --color-text-50: var(--text-50);
+  --color-text-subtle: var(--text-subtle);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -41,6 +42,10 @@
   --color-card: var(--card);
   --color-neutral-500: var(--neutral-500);
   --color-neutral-600: var(--neutral-600);
+  --color-border-admin: var(--border-admin);
+  --color-admin-user-avatar-fill: var(--admin-user-avatar-fill);
+  --color-admin-user-icon: var(--admin-user-icon);
+  --color-notification-tile-bg: var(--notification-tile-bg);
   --shadow-soft: 0px 1.5px 4px -1px rgb(10 9 11 / 7%);
   --shadow-xs: 0 1px 2px rgb(16 24 40 / 5%);
   --shadow-card: 0 1.5px 4px rgb(10 9 11 / 7%);
@@ -54,6 +59,9 @@
   --radius-3xl: 24px;
   --radius-4xl: 40px;
   --radius-full: 9999px;
+  --width-menu-panel: var(--menu-panel-w);
+  --width-admin-sidebar: var(--admin-sidebar-w);
+  --radius-admin-panel: var(--admin-panel-radius);
 }
 
 :root,
@@ -72,6 +80,7 @@
   --muted-foreground: rgb(255 255 255 / 60%);
   --text-70: rgb(255 255 255 / 70%);
   --text-50: rgb(255 255 255 / 50%);
+  --text-subtle: #8f9fa3;
   --surface-raised: #232323;
   --accent: rgb(255 255 255 / 20%);
   --accent-foreground: #ffffff;
@@ -92,6 +101,74 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgb(255 255 255 / 50%);
   --sidebar-ring: #ffd400;
+
+  /* Application shell (docs/09-app-shell.md §3). Mobile defaults; lg overrides below. */
+  --container-max: 1920px;
+  --gutter: 16px;
+  --gutter-nav: 16px;
+  --section-y: 56px;
+  --header-h: 96px;
+  --menu-panel-w: 100%;
+  --menu-scrim: rgb(0 0 0 / 50%);
+  --menu-panel-bg: rgb(0 0 0 / 78%);
+  --menu-panel-padding: 40px;
+  --menu-panel-radius: 40px;
+  --menu-panel-min-h: 100vh;
+  --menu-blur: 15.3px;
+  --footer-min-h: auto;
+  --footer-outer-pt: 32px;
+  --footer-outer-pb: 32px;
+  --footer-card-offset-top: 0px;
+  --footer-card-pt: 24px;
+  --footer-card-px: 16px;
+  --footer-card-pb: 56px;
+  --footer-card-radius: 16px;
+  --footer-card-min-h: auto;
+  --footer-logo-tab-w: 172px;
+  --footer-logo-tab-h: 96px;
+  --footer-logo-tab-radius: 12px;
+  --footer-logo-overhang: 0px;
+  --admin-sidebar-w: 240px;
+  --admin-panel-radius: 0px;
+  --admin-panel-top: 0px;
+  --admin-panel-right: 0px;
+  --admin-topbar-h: 112px;
+  --admin-content-pl: 16px;
+  --admin-content-pr: 16px;
+  /* Figma 120:674, 120:739 — admin dividers (top bar, logo block) */
+  --border-admin: #4b4b4b;
+  /* Figma 120:690 profile circle; 120:691 icon fill */
+  --admin-user-avatar-fill: #1c1c1c;
+  --admin-user-icon: #ffd400;
+  /* Figma 120:682 — notification bell tile (S8, not used yet) */
+  --notification-tile-bg: #eff4fa;
+}
+
+@media (min-width: 1024px) {
+  :root,
+  .dark {
+    --admin-panel-radius: 40px;
+    --admin-panel-top: 25px;
+    --admin-panel-right: 35px;
+    --admin-content-pl: 40px;
+    --admin-content-pr: 32px;
+    --gutter: 64px;
+    --gutter-nav: 56px;
+    --section-y: 80px;
+    --header-h: 112px;
+    --menu-panel-w: 819px;
+    --footer-min-h: 735px;
+    --footer-card-min-h: 545px;
+    --footer-card-offset-top: 122px;
+    --footer-logo-tab-w: 269px;
+    --footer-logo-tab-h: 111px;
+    --footer-logo-overhang: 62px;
+    --footer-outer-pt: 0px;
+    --footer-outer-pb: 68px;
+    --footer-card-pt: 76px;
+    --footer-card-px: 48px;
+    --footer-card-pb: 32px;
+  }
 }
 
 @layer base {
@@ -109,7 +186,12 @@
 [data-surface="admin"] {
   --background: #000000;
   --sidebar: #000000;
-  --sidebar-accent: #262626;
+  --sidebar-foreground: #ffffff;
+  --sidebar-accent: rgb(255 255 255 / 15%);
+  --primary: #ffd400;
+  --foreground: #ffffff;
+  --muted-foreground: rgb(255 255 255 / 70%);
+  --card: #1c1c1c;
 }
 
 [data-surface="admin"] [data-slot="button"][data-size="default"] {
