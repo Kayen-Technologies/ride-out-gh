@@ -12,6 +12,7 @@ alwaysApply: true
 - Route ↔ Figma frame map: docs/04-routes-and-screens.md
 - Build order: docs/06-build-plan.md
 - Unresolved decisions: docs/07-open-questions.md. Use the listed default and leave a `// TODO(Qn)` comment
+- Colour, type, radius and effects: docs/design-tokens.md
 
 ## Design source
 - Figma file key: `dmoIAsFN5cXluPaEzqWPzC`. Before building any screen, call `get_design_context` on the node ID listed in docs/04.
