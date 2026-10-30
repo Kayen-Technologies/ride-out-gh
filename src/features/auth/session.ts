@@ -14,16 +14,19 @@ export async function getStaffSession() {
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, full_name")
     .eq("id", userId)
     .maybeSingle();
 
   const role = profile && typeof profile.role === "string" ? profile.role : null;
+  const fullName =
+    profile && typeof profile.full_name === "string" ? profile.full_name : null;
   const email = typeof data.claims.email === "string" ? data.claims.email : null;
 
   return {
     userId,
     email,
+    fullName,
     role,
     isStaff: !error && isStaffRole(role),
   };

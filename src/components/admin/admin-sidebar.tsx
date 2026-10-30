@@ -2,57 +2,47 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { LogOut } from "lucide-react";
 
+import { AdminNavList } from "@/components/admin/admin-nav-list";
 import { signOut } from "@/features/auth/actions";
 
-const links = [
-  ["Dashboard", "/admin"],
-  ["Inventory", "/admin/inventory"],
-  ["Vehicle Orders", "/admin/orders"],
-  ["Rental Bookings", "/admin/rentals"],
-  ["Customers", "/admin/customers"],
-  ["Website content", "/admin/content"],
-  ["Settings", "/admin/settings"],
-] as const;
-
 export function AdminSidebar() {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
   return (
-    <>
-      <div className="flex items-center justify-between border-b border-sidebar-border px-4 py-4 md:hidden">
-        <p className="text-sm font-semibold">Ride Out</p>
-        <button type="button" className="rounded-full bg-white/10 px-3 py-2" onClick={() => setOpen((current) => !current)}>
-          <Image src={open ? "/brand/close.svg" : "/brand/menu.svg"} alt="" width={open ? 16 : 24} height={open ? 16 : 24} />
-          <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
-        </button>
-      </div>
-      <aside className={`${open ? "flex" : "hidden"} w-full flex-col bg-sidebar px-4 py-6 md:flex md:w-64 md:shrink-0`}>
-        <p className="hidden px-3 text-sm font-semibold md:block">Ride Out</p>
-        <nav className="mt-4 flex flex-col gap-1" aria-label="Admin">
-          {links.map(([label, href]) => {
-            const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`rounded-md px-3 py-2 text-sm ${active ? "bg-primary text-primary-foreground" : "text-sidebar-foreground"}`}
-                onClick={() => setOpen(false)}
-              >
-                {label}
-              </Link>
-            );
-          })}
+    <aside className="sticky top-0 hidden h-svh w-[var(--admin-sidebar-w)] shrink-0 flex-col bg-sidebar pt-[var(--admin-panel-top)] lg:flex">
+      <div className="flex min-h-0 flex-1 flex-col">
+        {/* Figma 120:739 — logo block with bottom border at y ≈ 112 inside sidebar */}
+        <div className="flex h-[112px] w-full shrink-0 items-center border-b border-border-admin px-6 py-2">
+          <Link href="/admin" aria-label="Ride Out" className="block h-[63px] w-[138px]">
+            <Image
+              src="/brand/logo-admin-sidebar.png"
+              alt=""
+              width={138}
+              height={63}
+              className="h-[63px] w-[138px] object-contain"
+              unoptimized
+            />
+          </Link>
+        </div>
+
+        {/* Figma 120:738 — 43 px gap between logo block and nav wrapper */}
+        <nav
+          className="mt-[43px] flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6"
+          aria-label="Admin"
+        >
+          <AdminNavList showLogout={false} />
         </nav>
-        <form action={signOut} className="mt-6">
-          <button type="submit" className="px-3 py-2 text-sm text-white/60">
+
+        <form action={signOut} className="mt-auto shrink-0 pb-6">
+          <button
+            type="submit"
+            className="flex h-9 w-full items-center gap-2 px-9 py-2 text-sm text-destructive"
+          >
+            <LogOut className="size-5 shrink-0" strokeWidth={1.75} aria-hidden />
             Log out
           </button>
         </form>
-      </aside>
-    </>
+      </div>
+    </aside>
   );
 }
