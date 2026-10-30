@@ -6,7 +6,7 @@ Every prompt assumes Cursor has the Figma MCP connected and reads `.cursor/rules
 
 ---
 
-## Phase 0 — Foundation (≈3 days)
+## Phase 0 — Foundation (≈4 days)
 
 | Task | Cursor prompt | Done when |
 |---|---|---|
@@ -14,8 +14,21 @@ Every prompt assumes Cursor has the Figma MCP connected and reads `.cursor/rules
 | 0.2 Theme | "Read Figma variables from node 4:723 (file dmoIAsFN5cXluPaEzqWPzC) with get_variable_defs. Map them to shadcn CSS variables in src/app/globals.css, dark theme as default. Add the fonts with next/font. Do not invent values. List any token you could not find." | Buttons, inputs and cards match the Figma colours and fonts |
 | 0.3 Supabase clients | "Create src/lib/supabase/{server,client,public,admin,proxy}.ts using @supabase/ssr and the env names in .env.example. public.ts is a plain supabase-js client with the publishable key and no cookies (for cached reads). admin.ts uses SUPABASE_SECRET_KEY and must import 'server-only'. Add src/proxy.ts (Next.js 16 renamed middleware.ts to proxy.ts; export function proxy) that refreshes the session using supabase.auth.getClaims(), redirects /account/* to /login when signed out, and redirects /admin/* unless the profile role is admin or super_admin. Never trust supabase.auth.getSession() on the server." | Signed-out visit to /admin redirects to /login |
 | 0.4 DB + types | "Run the migration and generate types per docs/05-setup.md step 6. Create src/lib/status.ts from the pipeline tables in docs/03-data-model.md." | Types compile. `status.ts` exports label, step and tab maps |
-| 0.5 Shell layouts | "Build the (site) layout with header (nav-bar in frame 1:476, menu dropdown 1:5235) and footer, and the /admin layout with sidebar from frame 120:645." | Every route renders inside the right shell |
+| 0.5 Application shell | See the sub-tasks 0.5a–0.5f below. Spec: docs/09-app-shell.md | Every route renders inside the right shell, and no page sets its own width, gutter or section padding |
 | 0.6 CMS content layer | "Apply migration 20261028000100_cms.sql. Create src/features/cms/registry.ts using the content inventory in docs/08-cms.md section 4, with Figma text as defaults and maxLength per the rule. Create getPageContent(page, locale) that calls get_published_content, caches with 'use cache' + cacheTag('cms:<page>') + cacheLife('max') using the cookie-free client in src/lib/supabase/public.ts (cached functions cannot read cookies), and deep-merges over registry defaults. Add a seed script that writes the defaults into every page's draft and published content. Build the header and footer from 'global' content." | Header and footer render from the CMS. Emptying a field in the database falls back to the Figma default. **From here on, every public page reads its copy from the CMS** |
+
+### Task 0.5 — Application shell (spec: [09-app-shell.md](09-app-shell.md))
+
+Figma is the source of truth. Run one sub-task at a time and compare screenshots at 1440 and 390 px before moving on.
+
+| Task | Cursor prompt | Done when |
+|---|---|---|
+| 0.5a Shell tokens | "Read docs/09-app-shell.md. Add the shell tokens from section 3 to src/app/globals.css. Do not hard-code them in components." | Tokens exist and are used by the next tasks |
+| 0.5b Container and Section | "Create src/components/layout/container.tsx and section.tsx per section 4. Container: max 1920 (--container-max), centred, gutter 16 / 64. Section: full-bleed band with a background prop and vertical padding 56 / 80." | One example page uses both and matches 1440 and 390 px |
+| 0.5c Site shell | "Rebuild the (site) layout per docs/09-app-shell.md: header (4:418, mobile 120:12596), the menu overlay (1:5235) with scrim and right panel, and the footer (1:2458). Menu items and footer text keep coming from the CMS `global` page." | Overlay opens, traps focus, closes on Escape and scrim. Footer matches the frame. Read the mobile footer frame first |
+| 0.5d Admin shell | "Rebuild the /admin layout per docs/09-app-shell.md: black canvas capped at 1920, 240 px sidebar with logo, icons and the active state (120:737), the rounded 1C1C1C panel (120:646), the top bar (120:674), and an <AdminPage> wrapper. Remove the 'Signed in as' line." | Active link follows nested routes. Log out works |
+| 0.5e Responsive behaviour | "Add the admin slide-over navigation below lg (section 5) and check the site header and footer between 390 and 1440 px." | No horizontal scroll from 360 to 1920 px. Keyboard can reach everything |
+| 0.5f Shell QA | "Screenshot /, /login and /admin at 1440 and 390 px and compare each with its Figma frame. List every difference over 2 px." | Differences are fixed or listed with a reason |
 
 ## Phase 1 — Auth and accounts (≈2 days)
 
@@ -98,4 +111,4 @@ Spec: [08-cms.md](08-cms.md). No Figma frames. Build with existing dashboard com
 5. A customer account cannot load `/admin` or another customer's `/account/requests/[code]`.
 6. Admin edits the homepage hero title, previews it, publishes it, sees it live, then restores the previous version from History.
 
-**Estimated total: about 29 developer-days** (Phase 0: 3 + Phase 1: 2 + Phase 2: 5 + Phase 3: 5 + Phase 4: 5 + Phase 4b: 5 + Phase 5: 4) for one developer working with Cursor. The CMS adds 6 days: 1 for the content layer in Phase 0 and 5 for the editor. The estimate excludes content and translation delays from the client.
+**Estimated total: about 30 developer-days** (Phase 0: 4 + Phase 1: 2 + Phase 2: 5 + Phase 3: 5 + Phase 4: 5 + Phase 4b: 5 + Phase 5: 4) for one developer working with Cursor. The CMS adds 6 days: 1 for the content layer in Phase 0 and 5 for the editor. The estimate excludes content and translation delays from the client.

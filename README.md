@@ -18,6 +18,7 @@ Website and admin dashboard for Ride Out, a vehicle business in Tema, Ghana. Cus
 | [06 — Build plan](docs/06-build-plan.md) | You need the phase order, Cursor prompts or acceptance criteria |
 | [07 — Open questions](docs/07-open-questions.md) | You need a decision from the client |
 | [08 — Website content (CMS)](docs/08-cms.md) | You need to know how staff edit website text and images from the dashboard, or what's editable |
+| [09 — Application shell](docs/09-app-shell.md) | You need the page container, header, menu, footer, admin sidebar, top bar or responsive rules |
 
 Cursor reads the project rules automatically from [.cursor/rules/ride-out.mdc](.cursor/rules/ride-out.mdc).
 
