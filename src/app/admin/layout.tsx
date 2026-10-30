@@ -1,14 +1,17 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getStaffSession } from "@/features/auth/session";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense fallback={<AdminFallback />}>
-      <AdminGate>{children}</AdminGate>
-    </Suspense>
+    <div data-surface="admin" className="flex min-h-full flex-1 flex-col bg-background">
+      <Suspense fallback={<AdminFallback />}>
+        <AdminGate>{children}</AdminGate>
+      </Suspense>
+    </div>
   );
 }
 
@@ -18,11 +21,14 @@ async function AdminGate({ children }: { children: React.ReactNode }) {
   if (!session.isStaff) redirect("/");
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-10">
-      <p className="text-sm text-muted-foreground">
-        Signed in as {session.email ?? "staff"} ({session.role})
-      </p>
-      {children}
+    <div className="flex min-h-full flex-1 flex-col md:flex-row">
+      <AdminSidebar />
+      <div className="flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-10">
+        <p className="text-sm text-muted-foreground">
+          Signed in as {session.email ?? "staff"} ({session.role})
+        </p>
+        {children}
+      </div>
     </div>
   );
 }
