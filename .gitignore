@@ -19,3 +19,7 @@ supabase/.branches/
 *.log
 .vercel
 *.tsbuildinfo
+
+# QA artifacts (reports stay tracked)
+docs/qa/**/*.png
+docs/qa/**/*.js

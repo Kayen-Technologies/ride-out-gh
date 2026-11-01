@@ -42,7 +42,7 @@ Figma is the source of truth. Run one sub-task at a time and compare screenshots
 
 | Task | Prompt hint | Done when |
 |---|---|---|
-| 2.1 | Admin inventory list with KPIs and All/For sale/For rent tabs (120:3449). TanStack data table with search | List shows seeded vehicles |
+| 2.1 | Admin inventory list (120:3449; tab variants 120:3663, 120:3841, 120:4037, 120:4251; empty state 120:1083, 120:1213). KPI cards (Total, Available, For sale, For rent), five tabs (All vehicles, For Sale, For Rent, Published, Hidden), availability filter, search, rows with price and badges. Filters live in the URL and are applied on the server. TanStack data table. A dev seed script adds sample vehicles | List shows seeded vehicles. KPIs match the database. Filters are shareable by URL. Empty state matches Figma |
 | 2.2 | 4-step Add Vehicle wizard for sale and rent (frames in docs/04). One zod schema per step. Image upload to `vehicle-images` with drag-to-reorder and cover pick. "Save as draft" and "Publish" | Both success dialogs appear. Data is saved correctly |
 | 2.3 | Vehicle detail + Edit + Hide listing + Availability status dialog (120:4411, 120:4635, 120:4579) | A hidden vehicle disappears from the public site |
 | 2.4 | `/buy` listing with filters and sort, from URL search params (1:3047). Server-rendered | Filters are shareable by URL |

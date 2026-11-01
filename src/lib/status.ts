@@ -3,6 +3,9 @@ import type { Database } from "@/lib/supabase/database.types";
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 type RentalStatus = Database["public"]["Enums"]["rental_status"];
 type OrderService = Database["public"]["Enums"]["order_service_type"];
+type AvailabilityStatus = Database["public"]["Enums"]["availability_status"];
+type ListingStatus = Database["public"]["Enums"]["listing_status"];
+type ListingPurpose = Database["public"]["Enums"]["listing_purpose"];
 
 export type OrderAdminTab = "new" | "active" | "completed" | "all";
 export type RentalAdminTab = "new" | "upcoming" | "active" | "past" | "all";
@@ -79,3 +82,42 @@ export function rentalStepIndex(status: RentalStatus) {
   if (status === "cancelled") return -1;
   return rentalSteps.findIndex((step) => step.status === status);
 }
+
+const availabilityLabels: Record<AvailabilityStatus, string> = {
+  available: "Available",
+  booked: "Reserved",
+  rented: "Rented",
+  sold: "Sold",
+  under_maintenance: "Maintenance",
+  unavailable: "Unavailable",
+};
+
+const listingStatusLabels: Record<ListingStatus, string> = {
+  draft: "Draft",
+  published: "Published",
+  hidden: "Hidden",
+};
+
+const listingPurposeLabels: Record<ListingPurpose, string> = {
+  sale: "For Sale",
+  rent: "For Rent",
+};
+
+export function availabilityLabel(status: AvailabilityStatus) {
+  return availabilityLabels[status];
+}
+
+export function listingStatusLabel(status: ListingStatus) {
+  return listingStatusLabels[status];
+}
+
+export function listingPurposeLabel(purpose: ListingPurpose) {
+  return listingPurposeLabels[purpose];
+}
+
+export const availabilityFilterOptions = [
+  { value: "all", label: "All Statuses" },
+  ...(
+    Object.entries(availabilityLabels) as [AvailabilityStatus, string][]
+  ).map(([value, label]) => ({ value, label })),
+] as const;

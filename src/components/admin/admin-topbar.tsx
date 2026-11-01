@@ -27,7 +27,7 @@ export function AdminTopbar({ title, breadcrumb, actions }: AdminTopbarProps) {
             {breadcrumb ? (
               <p className="text-xs leading-normal text-muted-foreground">{breadcrumb}</p>
             ) : null}
-            <h1 className="text-2xl font-medium leading-tight text-foreground">{title}</h1>
+            <h1 className="text-2xl font-normal leading-tight text-foreground">{title}</h1>
           </div>
           <div className="flex shrink-0 items-center gap-6">
             {actions}

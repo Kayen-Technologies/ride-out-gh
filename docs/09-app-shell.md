@@ -128,3 +128,4 @@ Each needs a designer's or the client's answer. The default shows what Cursor bu
 | S8 | The notification tile is a light `#EFF4FA` block in a dark UI, and no notification feature is planned | Leave it out until notifications exist |
 | S9 | The shell is capped at 1920 on large monitors (owner decision). Figma shows nothing between 1440 and 1920, so the designer should check a wide screen | Capped at 1920. The admin shows black either side, the site shows the section colours edge to edge |
 | S10 | Figma shows no sticky or fixed header behaviour | Site header scrolls away. Admin sidebar stays fixed |
+| S11 | Admin content width differs by frame: 1103 on Inventory (22 px right padding), 1100 on Vehicle Orders, 1092 on Dashboard (33 px) | The shell keeps one value (40 left, 32 right). Pages must not add their own padding to compensate |
