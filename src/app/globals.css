@@ -46,6 +46,8 @@
   --color-admin-user-avatar-fill: var(--admin-user-avatar-fill);
   --color-admin-user-icon: var(--admin-user-icon);
   --color-notification-tile-bg: var(--notification-tile-bg);
+  --color-admin-cta: var(--admin-cta);
+  --color-admin-search-bg: var(--admin-search-bg);
   --shadow-soft: 0px 1.5px 4px -1px rgb(10 9 11 / 7%);
   --shadow-xs: 0 1px 2px rgb(16 24 40 / 5%);
   --shadow-card: 0 1.5px 4px rgb(10 9 11 / 7%);
@@ -142,6 +144,10 @@
   --admin-user-icon: #ffd400;
   /* Figma 120:682 — notification bell tile (S8, not used yet) */
   --notification-tile-bg: #eff4fa;
+  /* Figma 120:3479 — admin “Add vehicle” / list primary actions */
+  --admin-cta: #f8cf41;
+  /* Figma 120:3488 — inventory search field fill */
+  --admin-search-bg: #eff4fa;
 }
 
 @media (min-width: 1024px) {

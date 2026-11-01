@@ -1,0 +1,168 @@
+/* Ride Out loader animations, shared by the route loader and the inline kit. */
+.ro-car {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ro-swap 8s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+}
+.ro-car-2 {
+  animation-delay: -6s;
+}
+.ro-car-3 {
+  animation-delay: -4s;
+}
+.ro-car-4 {
+  animation-delay: -2s;
+}
+.ro-bob {
+  animation: ro-bob 0.42s ease-in-out infinite alternate;
+}
+.ro-spoke {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ro-spin 0.45s linear infinite;
+}
+.ro-tyre {
+  animation: ro-spin 0.8s linear infinite;
+}
+.ro-sky {
+  animation: ro-pan-200 14s linear infinite;
+}
+.ro-signs {
+  animation: ro-pan-800 11s linear infinite;
+}
+.ro-dash {
+  stroke-dasharray: 14 26;
+  animation: ro-dash 0.32s linear infinite;
+}
+.ro-whoosh line {
+  animation: ro-whoosh 0.7s linear infinite;
+}
+.ro-whoosh line:nth-child(2) {
+  animation-delay: -0.25s;
+}
+.ro-whoosh line:nth-child(3) {
+  animation-delay: -0.45s;
+}
+.ro-puff {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ro-puff 1s ease-out infinite;
+}
+.ro-puff + .ro-puff {
+  animation-delay: -0.5s;
+}
+.ro-headlight {
+  animation: ro-blink 1.4s ease-in-out infinite;
+}
+.ro-words {
+  animation: ro-words 8s cubic-bezier(0.7, -0.45, 0.3, 1.45) infinite;
+}
+.ro-dot {
+  animation: ro-dot 1.2s ease-in-out infinite;
+}
+.ro-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.ro-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.ro-indeterminate {
+  animation: ro-indeterminate 1.5s cubic-bezier(0.6, 0, 0.3, 1) infinite;
+}
+.ro-sticker {
+  animation: ro-wiggle 1.6s ease-in-out infinite;
+}
+.ro-ping {
+  animation: ro-ping 1.4s ease-out infinite;
+}
+.ro-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+.ro-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 212 0 / 12%), transparent);
+  animation: ro-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ro-loader] *,
+  [data-ro-loader] *::after,
+  .ro-tyre,
+  .ro-shimmer::after {
+    animation: none !important;
+  }
+  .ro-car-2,
+  .ro-car-3,
+  .ro-car-4 {
+    opacity: 0;
+  }
+}
+
+@keyframes ro-swap {
+  0% { opacity: 1; transform: scale(1, 1); }
+  3% { opacity: 1; transform: scale(1.06, 0.94); }
+  6% { opacity: 1; transform: scale(1, 1); }
+  21% { opacity: 1; transform: scale(1, 1); }
+  24% { opacity: 0; transform: scale(1.14, 0.5); }
+  96% { opacity: 0; transform: translateY(-8px) scale(0.86, 1.22); }
+  100% { opacity: 1; transform: scale(1, 1); }
+}
+@keyframes ro-bob {
+  to { transform: translateY(-1.6px); }
+}
+@keyframes ro-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ro-pan-200 {
+  to { transform: translateX(-200px); }
+}
+@keyframes ro-pan-800 {
+  to { transform: translateX(-800px); }
+}
+@keyframes ro-dash {
+  to { stroke-dashoffset: -40; }
+}
+@keyframes ro-whoosh {
+  0% { transform: translateX(10px); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateX(-26px); opacity: 0; }
+}
+@keyframes ro-puff {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0.8; }
+  100% { transform: translate(-22px, -6px) scale(2.4); opacity: 0; }
+}
+@keyframes ro-blink {
+  50% { opacity: 0.4; }
+}
+/* One step per service word; the fifth row repeats the first so the loop is seamless. */
+@keyframes ro-words {
+  0%, 21% { transform: translateY(0); }
+  25%, 46% { transform: translateY(calc(var(--ro-word-h) * -1)); }
+  50%, 71% { transform: translateY(calc(var(--ro-word-h) * -2)); }
+  75%, 96% { transform: translateY(calc(var(--ro-word-h) * -3)); }
+  100% { transform: translateY(calc(var(--ro-word-h) * -4)); }
+}
+@keyframes ro-dot {
+  0%, 100% { opacity: 0.2; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-6px); }
+}
+@keyframes ro-indeterminate {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(330%); }
+}
+@keyframes ro-wiggle {
+  0%, 100% { transform: rotate(-9deg) scale(1); }
+  50% { transform: rotate(-4deg) scale(1.06); }
+}
+@keyframes ro-ping {
+  0% { box-shadow: 0 0 0 0 var(--primary); }
+  100% { box-shadow: 0 0 0 8px transparent; }
+}
+@keyframes ro-shimmer {
+  to { transform: translateX(100%); }
+}
