@@ -2,17 +2,15 @@
 .ro-car {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: ro-swap 8s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+  animation: ro-swap 14s cubic-bezier(0.5, 0, 0.2, 1) infinite;
 }
-.ro-car-2 {
-  animation-delay: -6s;
-}
-.ro-car-3 {
-  animation-delay: -4s;
-}
-.ro-car-4 {
-  animation-delay: -2s;
-}
+/* Seven vehicles, 2s each, so every swap lands on a service-word flip (that cycle is 4 × 2s). */
+.ro-car-2 { animation-delay: -12s; }
+.ro-car-3 { animation-delay: -10s; }
+.ro-car-4 { animation-delay: -8s; }
+.ro-car-5 { animation-delay: -6s; }
+.ro-car-6 { animation-delay: -4s; }
+.ro-car-7 { animation-delay: -2s; }
 .ro-bob {
   animation: ro-bob 0.42s ease-in-out infinite alternate;
 }
@@ -96,20 +94,19 @@
   .ro-shimmer::after {
     animation: none !important;
   }
-  .ro-car-2,
-  .ro-car-3,
-  .ro-car-4 {
+  .ro-car:not(.ro-car-1) {
     opacity: 0;
   }
 }
 
+/* Same beats as before, scaled to a 14s cycle: squash in 0.24s, hold, squash out 1.68s–1.92s, pop back 0.32s early. */
 @keyframes ro-swap {
   0% { opacity: 1; transform: scale(1, 1); }
-  3% { opacity: 1; transform: scale(1.06, 0.94); }
-  6% { opacity: 1; transform: scale(1, 1); }
-  21% { opacity: 1; transform: scale(1, 1); }
-  24% { opacity: 0; transform: scale(1.14, 0.5); }
-  96% { opacity: 0; transform: translateY(-8px) scale(0.86, 1.22); }
+  1.71% { opacity: 1; transform: scale(1.06, 0.94); }
+  3.43% { opacity: 1; transform: scale(1, 1); }
+  12% { opacity: 1; transform: scale(1, 1); }
+  13.71% { opacity: 0; transform: scale(1.14, 0.5); }
+  97.71% { opacity: 0; transform: translateY(-8px) scale(0.86, 1.22); }
   100% { opacity: 1; transform: scale(1, 1); }
 }
 @keyframes ro-bob {
