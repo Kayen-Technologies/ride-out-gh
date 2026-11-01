@@ -14,6 +14,7 @@ import {
   type SignUpValues,
   type VerifyEmailValues,
 } from "@/features/auth/schema";
+import { landingPath } from "@/features/auth/landing";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -35,7 +36,7 @@ export async function signIn(input: SignInValues, remember = false) {
   });
 
   if (error) return { error: error.message };
-  redirect("/");
+  redirect(await landingPath(supabase));
 }
 
 export async function signInFromForm(_prev: { error: string } | null, formData: FormData) {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { AuthShell } from "@/components/auth/auth-shell";
+import { ResetHeroPanel } from "@/components/auth/reset-hero-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ResetPasswordForm } from "@/features/auth/components/password-forms";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -9,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export default function ResetPasswordPage() {
   return (
-    <AuthShell>
+    <AuthShell hero={<ResetHeroPanel />}>
       <Suspense fallback={<Skeleton className="h-64 w-full" />}>
         <ResetGate />
       </Suspense>

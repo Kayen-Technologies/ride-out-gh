@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { AuthShell } from "@/components/auth/auth-shell";
+import { LoginHeroPanel } from "@/components/auth/login-hero-panel";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
 export default function LoginPage({
@@ -9,7 +10,7 @@ export default function LoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   return (
-    <AuthShell>
+    <AuthShell hero={<LoginHeroPanel />} mobileAlign="top">
       <Suspense>
         <AuthError searchParams={searchParams} />
       </Suspense>
