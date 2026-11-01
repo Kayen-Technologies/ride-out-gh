@@ -14,7 +14,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="mx-auto flex min-h-svh min-w-0 max-w-[var(--container-max)] flex-col bg-background lg:flex-row">
+    <div className="mx-auto flex min-h-svh min-w-0 max-w-[var(--container-max)] flex-col bg-background lg:h-svh lg:flex-row lg:overflow-hidden">
       <header className="flex h-[var(--header-h)] shrink-0 items-center justify-between bg-background px-[var(--gutter-nav)] lg:hidden">
         <Link href="/admin" aria-label="Ride Out" className="shrink-0">
           <BrandLogo variant="header" />
@@ -38,7 +38,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
       {/* Figma S4: panel inset 25px top, 35px right (120:646) from lg; mobile uses shell tokens at 0 / 16. */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col pb-0 lg:pt-[var(--admin-panel-top)] lg:pr-[var(--admin-panel-right)] lg:pb-6">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-hidden bg-card lg:min-h-[calc(100svh-var(--admin-panel-top)-24px)] lg:rounded-[var(--admin-panel-radius)]">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-hidden bg-card lg:rounded-[var(--admin-panel-radius)]">
           {children}
         </div>
       </div>

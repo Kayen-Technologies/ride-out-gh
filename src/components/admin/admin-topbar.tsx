@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   adminDisplayName,
@@ -14,6 +16,46 @@ type AdminTopbarProps = {
   actions?: React.ReactNode;
 };
 
+/** Where each breadcrumb label goes. A label not listed here stays plain text (the page you are on). */
+const BREADCRUMB_LINKS: Record<string, string> = {
+  Workspace: "/admin",
+  Dashboard: "/admin",
+  "Vehicle Inventory": "/admin/inventory",
+  "Vehicle Orders": "/admin/orders",
+  "Rental Bookings": "/admin/rentals",
+  Customers: "/admin/customers",
+  "Website content": "/admin/content",
+  Settings: "/admin/settings",
+};
+
+function Breadcrumb({ trail }: { trail: string }) {
+  const pathname = usePathname();
+  const segments = trail.split(" / ");
+  return (
+    <nav aria-label="Breadcrumb">
+      <ol className="flex flex-wrap items-center gap-x-1 text-xs leading-normal text-muted-foreground">
+        {segments.map((label, index) => {
+          const href = BREADCRUMB_LINKS[label];
+          const isLast = index === segments.length - 1;
+          const linked = href && href !== pathname;
+          return (
+            <li key={`${label}-${index}`} className="flex items-center gap-1">
+              {linked ? (
+                <Link href={href} className="underline-offset-2 hover:text-foreground hover:underline focus-visible:text-foreground focus-visible:underline focus-visible:outline-none">
+                  {label}
+                </Link>
+              ) : (
+                <span aria-current={isLast ? "page" : undefined}>{label}</span>
+              )}
+              {isLast ? null : <span aria-hidden>/</span>}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
 export function AdminTopbar({ title, breadcrumb, actions }: AdminTopbarProps) {
   const session = useAdminSession();
   const name = adminDisplayName(session.fullName, session.email);
@@ -24,9 +66,7 @@ export function AdminTopbar({ title, breadcrumb, actions }: AdminTopbarProps) {
       <div className="flex h-full items-center">
         <div className="flex w-full items-center justify-between gap-4 px-4 lg:gap-6 lg:pl-10 lg:pr-6">
           <div className="min-w-0">
-            {breadcrumb ? (
-              <p className="text-xs leading-normal text-muted-foreground">{breadcrumb}</p>
-            ) : null}
+            {breadcrumb ? <Breadcrumb trail={breadcrumb} /> : null}
             <h1 className="text-2xl font-normal leading-tight text-foreground">{title}</h1>
           </div>
           <div className="flex shrink-0 items-center gap-6">
