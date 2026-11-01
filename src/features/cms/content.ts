@@ -26,7 +26,7 @@ async function readPublished(page: PageId): Promise<{ ok: true; data: unknown } 
   return { ok: true, data };
 }
 
-function mergeBranch(branch: object, published: unknown, locale: Locale): Record<string, unknown> {
+export function mergeBranch(branch: object, published: unknown, locale: Locale): Record<string, unknown> {
   const localeTree = localeTreeOf(published, locale);
   const englishTree = locale === "en" ? localeTree : localeTreeOf(published, "en");
   const resolved: Record<string, unknown> = {};
@@ -35,7 +35,8 @@ function mergeBranch(branch: object, published: unknown, locale: Locale): Record
     const localValue = valueAt(localeTree, key);
     const englishValue = valueAt(englishTree, key);
     if (isField(value)) {
-      resolved[key] = filled(localValue) ? localValue : filled(englishValue) ? englishValue : value.default;
+      const chosen = filled(localValue) ? localValue : filled(englishValue) ? englishValue : value.default;
+      resolved[key] = value.type === "list" ? withItemDefaults(chosen, value.default) : chosen;
       continue;
     }
     resolved[key] = mergeBranch(value, { en: englishValue, [locale]: localValue }, locale);
@@ -57,5 +58,27 @@ function valueAt(tree: unknown, key: string): unknown {
 function filled(value: unknown) {
   if (typeof value === "string") return value.trim().length > 0;
   if (Array.isArray(value)) return value.length > 0;
+  // Image and video fields: filled once a file or poster has been chosen.
+  if (value && typeof value === "object") return typeof (value as { src?: unknown }).src === "string" && ((value as { src: string }).src.trim().length > 0 || typeof (value as { poster?: unknown }).poster === "string");
   return false;
+}
+
+/**
+ * A list saved before a field was added (for example a picture on each service) would leave that field
+ * empty. Each saved item is topped up from the default item in the same position; what staff wrote wins.
+ */
+function withItemDefaults(items: unknown, defaults: readonly unknown[]): unknown {
+  if (!Array.isArray(items)) return items;
+  return items.map((item, index) => {
+    const base = defaults[index];
+    if (item && base && typeof item === "object" && typeof base === "object" && !Array.isArray(item)) {
+      const merged: Record<string, unknown> = { ...(base as Record<string, unknown>) };
+      for (const [k, v] of Object.entries(item as Record<string, unknown>)) {
+        const empty = v === undefined || v === null || (typeof v === "object" && !(v as { src?: string }).src);
+        if (!empty) merged[k] = v;
+      }
+      return merged;
+    }
+    return item;
+  });
 }
