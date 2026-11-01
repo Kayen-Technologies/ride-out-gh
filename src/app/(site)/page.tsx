@@ -1,40 +1,41 @@
-import Link from "next/link";
+import { BrandsStrip } from "@/features/home/components/brands-strip";
+import { CarsSearch } from "@/features/home/components/cars-search";
+import { CtaCollage } from "@/features/home/components/cta-collage";
+import { Hero } from "@/features/home/components/hero";
+import { Importation } from "@/features/home/components/importation";
+import { Services } from "@/features/home/components/services";
+import { getHomeBrands, getHomeCars } from "@/features/home/queries";
+import { getPageContent } from "@/features/cms/content";
 
-import { Section } from "@/components/layout/section";
-import { hasSupabaseEnv } from "@/lib/supabase/env";
+const serviceMedia = [
+  { href: "/import", image: "/home/service-1.webp", alt: "Container ship being unloaded at a port", navLabel: "Buy Through Copart" },
+  { href: "/sell", image: "/home/service-2.webp", alt: "A hand holding out a car key", navLabel: "Sell your car" },
+  { href: "/rent", image: "/home/service-3.webp", alt: "A row of rental cars", navLabel: "Rent a car" },
+] as const;
 
-export default function Home() {
-  const configured = hasSupabaseEnv();
+export default async function Home() {
+  const [content, cars, brands] = await Promise.all([getPageContent("home"), getHomeCars(4), getHomeBrands()]);
+
+  const services = (content.services.items as readonly { title: string; body?: string; cta?: string }[]).map((item, i) => ({
+    title: item.title,
+    body: item.body ?? "",
+    cta: item.cta ?? (i === 1 ? "Sell your car" : undefined),
+    ...serviceMedia[i],
+  }));
 
   return (
     <>
-      <Section background="background" aria-label="Homepage intro">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-semibold">Ride Out</h1>
-            <p className="text-muted-foreground">
-              The app skeleton is running. Public pages and the dashboard come next.
-            </p>
-          </div>
-          {configured ? null : (
-            <p className="text-sm text-muted-foreground">
-              Supabase keys are not in .env.local yet. Sign-in will not reach a project until they are.
-            </p>
-          )}
-          <div className="flex gap-4 text-sm font-medium">
-            <Link href="/login">Sign in</Link>
-            <Link href="/sign-up">Create account</Link>
-            <Link href="/admin">Admin</Link>
-          </div>
-        </div>
-      </Section>
-      <Section background="card" aria-label="Shell layout check">
-        <p className="text-sm text-muted-foreground">
-          This band uses the shell <code className="text-foreground">Section</code> and{" "}
-          <code className="text-foreground">Container</code> tokens. Content is capped at{" "}
-          <span className="text-foreground">--container-max</span>; the background runs full width.
-        </p>
-      </Section>
+      <Hero title={content.hero.title} subtitle={content.hero.subtitle} />
+      <BrandsStrip />
+      <Importation
+        title={content.import.title}
+        body={content.import.body}
+        primaryCta={content.import.primary_cta}
+        secondaryCta={content.import.secondary_cta}
+      />
+      <CarsSearch title={content.search.title} viewAll={content.search.view_all_cta} brands={brands} cars={cars} />
+      <Services title={content.services.title} intro={content.services.body} services={services} />
+      <CtaCollage title={content.cta.title} body={content.cta.body} button={content.cta.button} />
     </>
   );
 }

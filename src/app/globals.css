@@ -302,3 +302,30 @@
   letter-spacing: -0.02em;
   font-weight: 700;
 }
+
+/* Expanded display face for site headings (Figma: SF Pro Expanded Semibold). */
+@utility font-display {
+  font-family: var(--font-display), var(--font-inter), sans-serif;
+  font-stretch: 120%;
+  font-weight: 600;
+}
+
+/* Hero still image: a slow drift so the page feels alive until the video is supplied. */
+@keyframes hero-drift {
+  from {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.08) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+@utility animate-hero-drift {
+  animation: hero-drift 28s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-drift {
+    animation: none;
+  }
+}
