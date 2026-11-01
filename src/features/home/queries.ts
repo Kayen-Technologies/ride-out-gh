@@ -13,6 +13,7 @@ export type HomeCar = {
   purpose: "sale" | "rent";
   bodyType: string | null;
   image: string | null;
+  blur: string | null;
 };
 
 /**
@@ -40,10 +41,10 @@ export async function getHomeCars(limit = 4): Promise<HomeCar[]> {
 
   const { data: covers } = await supabase
     .from("vehicle_images")
-    .select("vehicle_id, storage_path")
+    .select("vehicle_id, storage_path, blur_data_url")
     .in("vehicle_id", vehicles.map((v) => v.id))
     .eq("is_cover", true);
-  const coverOf = new Map((covers ?? []).map((c) => [c.vehicle_id, c.storage_path]));
+  const coverOf = new Map((covers ?? []).map((c) => [c.vehicle_id, c]));
 
   return vehicles.map((v) => ({
     id: v.id,
@@ -53,7 +54,8 @@ export async function getHomeCars(limit = 4): Promise<HomeCar[]> {
     price: v.sale_price,
     purpose: v.listing_purpose,
     bodyType: v.body_type,
-    image: coverOf.has(v.id) ? vehicleImageUrl(coverOf.get(v.id)!) : null,
+    image: coverOf.has(v.id) ? vehicleImageUrl(coverOf.get(v.id)!.storage_path) : null,
+    blur: coverOf.get(v.id)?.blur_data_url ?? null,
   }));
 }
 

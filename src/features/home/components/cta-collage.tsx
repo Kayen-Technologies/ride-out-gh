@@ -1,8 +1,9 @@
+import { blurFor } from "@/features/cms/blur-data";
 import { SmartImage } from "@/components/media/smart-image";
 import Link from "next/link";
 
 /** Figma 1:2417 / 120:14501: a centred call to action over a wide collage of cars. */
-type Picture = { src: string; alt: string };
+type Picture = { src: string; alt: string; blur?: string };
 
 export function CtaCollage({
   title,
@@ -45,6 +46,7 @@ export function CtaCollage({
         <div className="relative aspect-[780/460] w-full lg:hidden">
           <SmartImage
             src={imageMobile.src}
+            blurDataURL={imageMobile.blur ?? blurFor(imageMobile.src)}
             alt={imageMobile.alt}
             fill
             sizes="100vw"
@@ -54,6 +56,7 @@ export function CtaCollage({
         <div className="relative hidden aspect-[1440/527] w-full lg:block">
           <SmartImage
             src={image.src}
+            blurDataURL={image.blur ?? blurFor(image.src)}
             alt=""
             aria-hidden
             fill

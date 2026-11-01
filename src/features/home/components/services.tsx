@@ -13,6 +13,7 @@ type Service = {
   cta?: string;
   href: string;
   image: string;
+  blur?: string;
   alt: string;
   navLabel: string;
 };
@@ -105,6 +106,7 @@ export function Services({
                   <div className="relative aspect-[358/372] overflow-hidden rounded-2xl lg:aspect-[656/368]">
                     <SmartImage
                       src={service.image}
+                      blurDataURL={service.blur}
                       alt={service.alt}
                       fill
                       sizes="(min-width: 1024px) 656px, 100vw"

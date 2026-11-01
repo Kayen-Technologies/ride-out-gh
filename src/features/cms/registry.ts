@@ -9,7 +9,8 @@ type TextField = {
   maxLength: number;
 };
 
-export type Img = { src: string; alt: string };
+/** `blur` is the tiny preview shown while the picture loads; made automatically when a picture is uploaded. */
+export type Img = { src: string; alt: string; blur?: string };
 export type Vid = { src: string; poster: string };
 
 type ListItem =

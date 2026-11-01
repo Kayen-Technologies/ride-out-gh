@@ -98,7 +98,7 @@ export async function listVehicles(input: {
 
 export type VehicleDetail = {
   vehicle: VehicleRow;
-  images: { id: string; path: string; sortOrder: number; isCover: boolean }[];
+  images: { id: string; path: string; sortOrder: number; isCover: boolean; blur: string | null }[];
 };
 
 /** One vehicle with its photos in display order, or null when the id does not exist. */
@@ -110,7 +110,7 @@ export async function getVehicleDetail(id: string): Promise<VehicleDetail | null
     supabase.from("vehicles").select("*").eq("id", id).maybeSingle(),
     supabase
       .from("vehicle_images")
-      .select("id, storage_path, sort_order, is_cover")
+      .select("id, storage_path, sort_order, is_cover, blur_data_url")
       .eq("vehicle_id", id)
       .order("sort_order"),
   ]);
@@ -124,6 +124,7 @@ export async function getVehicleDetail(id: string): Promise<VehicleDetail | null
       path: image.storage_path,
       sortOrder: image.sort_order,
       isCover: image.is_cover,
+      blur: image.blur_data_url,
     })),
   };
 }

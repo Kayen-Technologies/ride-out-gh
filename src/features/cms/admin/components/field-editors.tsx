@@ -4,11 +4,13 @@ import { ArrowDown, ArrowUp, Film, ImageUp, Plus, Trash2 } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { blurFromBlob } from "@/lib/blur";
+
 import { TyreSpinner } from "@/components/loader/tyre-spinner";
 import { mediaProblem, uploadSiteMedia } from "@/features/cms/admin/media-upload";
 import { cn } from "cn";
 
-export type Img = { src: string; alt: string };
+export type Img = { src: string; alt: string; blur?: string };
 export type Vid = { src: string; poster: string };
 type Item = string | Record<string, unknown>;
 
@@ -63,7 +65,7 @@ export function TextEditor({
   );
 }
 
-function useUpload(kind: "image" | "video", folder: string, onDone: (url: string) => void) {
+function useUpload(kind: "image" | "video", folder: string, onDone: (url: string, blur: string | null) => void) {
   const [busy, setBusy] = useState(false);
   async function pick(file: File | undefined) {
     if (!file) return;
@@ -74,7 +76,8 @@ function useUpload(kind: "image" | "video", folder: string, onDone: (url: string
     }
     setBusy(true);
     try {
-      onDone(await uploadSiteMedia(file, folder));
+      const [url, blur] = await Promise.all([uploadSiteMedia(file, folder), kind === "image" && file.type !== "image/svg+xml" ? blurFromBlob(file) : Promise.resolve(null)]);
+      onDone(url, blur);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "The upload failed.");
     } finally {
@@ -102,7 +105,7 @@ export function ImageEditor({
 }) {
   const input = useRef<HTMLInputElement>(null);
   const altId = useId();
-  const { busy, pick } = useUpload("image", folder, (src) => onChange({ ...value, src }));
+  const { busy, pick } = useUpload("image", folder, (src, blur) => onChange({ src, alt: value.alt, ...(blur ? { blur } : {}) }));
   return (
     <div className="flex flex-col gap-2">
       <span className={labelClass}>{label}</span>
@@ -136,7 +139,7 @@ export function ImageEditor({
               {value.src ? "Replace picture" : "Upload picture"}
             </button>
             {original?.src && original.src !== value.src ? (
-              <button type="button" onClick={() => onChange({ ...value, src: original.src })} className="inline-flex h-9 items-center rounded-full px-4 text-sm font-medium text-text-70 hover:bg-white/10 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50">
+              <button type="button" onClick={() => onChange({ src: original.src, alt: value.alt })} className="inline-flex h-9 items-center rounded-full px-4 text-sm font-medium text-text-70 hover:bg-white/10 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50">
                 Use original
               </button>
             ) : null}

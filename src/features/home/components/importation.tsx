@@ -1,14 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { blurFor } from "@/features/cms/blur-data";
 import { SmartImage } from "@/components/media/smart-image";
 import { Container } from "@/components/layout/container";
 import { cn } from "cn";
 
 type Tile = {
   title: string;
-  image?: { src: string; alt: string };
-  image_mobile?: { src: string; alt: string };
+  image?: { src: string; alt: string; blur?: string };
+  image_mobile?: { src: string; alt: string; blur?: string };
 };
 
 type ImportationProps = {
@@ -65,6 +66,7 @@ export function Importation({
                 >
                   <SmartImage
                     src={picture.src}
+                    blurDataURL={picture.blur ?? blurFor(picture.src)}
                     alt={picture.alt || tile.title}
                     fill
                     sizes="45vw"
@@ -83,6 +85,7 @@ export function Importation({
                 >
                   <SmartImage
                     src={tile.image.src}
+                    blurDataURL={tile.image.blur ?? blurFor(tile.image.src)}
                     alt={tile.image.alt || tile.title}
                     fill
                     sizes="316px"

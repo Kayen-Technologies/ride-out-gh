@@ -129,14 +129,14 @@ export const STEP_FIELDS: Record<1 | 2, (keyof VehicleFormValues)[]> = {
   ],
 };
 
-export type SavedImage = { path: string; category: ImageCategory };
+export type SavedImage = { path: string; category: ImageCategory; blur?: string | null };
 
 export const saveVehicleInputSchema = z.object({
   id: z.uuid(),
   intent: z.enum(["draft", "publish"]),
   values: z.looseObject({}),
   images: z
-    .array(z.object({ path: z.string().min(1), category: z.enum(IMAGE_CATEGORIES) }))
+    .array(z.object({ path: z.string().min(1), category: z.enum(IMAGE_CATEGORIES), blur: z.string().max(2000).nullish() }))
     .max(MAX_IMAGES.interior + MAX_IMAGES.exterior),
 });
 

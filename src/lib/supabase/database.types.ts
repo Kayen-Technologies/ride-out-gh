@@ -573,6 +573,7 @@ export type Database = {
       }
       vehicle_images: {
         Row: {
+          blur_data_url: string | null
           created_at: string
           id: string
           is_cover: boolean
@@ -581,6 +582,7 @@ export type Database = {
           vehicle_id: string
         }
         Insert: {
+          blur_data_url?: string | null
           created_at?: string
           id?: string
           is_cover?: boolean
@@ -589,6 +591,7 @@ export type Database = {
           vehicle_id: string
         }
         Update: {
+          blur_data_url?: string | null
           created_at?: string
           id?: string
           is_cover?: boolean

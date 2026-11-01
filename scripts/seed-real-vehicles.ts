@@ -147,7 +147,7 @@ async function main() {
 
     const photos = manifest[car.key] ?? [];
     const ordered = [...photos.filter((p) => p.category === "exterior"), ...photos.filter((p) => p.category === "interior")];
-    const rows: { vehicle_id: string; storage_path: string; sort_order: number; is_cover: boolean }[] = [];
+    const rows: { vehicle_id: string; storage_path: string; sort_order: number; is_cover: boolean; blur_data_url: string }[] = [];
     for (const [index, photo] of ordered.entries()) {
       const buffer = await sharp(path.join(photosDir!, photo.file))
         .resize({ width: 2000, height: 2000, fit: "inside", withoutEnlargement: true })
@@ -158,7 +158,8 @@ async function main() {
         .from("vehicle-images")
         .upload(storagePath, buffer, { contentType: "image/webp" });
       if (uploadError) throw new Error(`${car.key}: ${uploadError.message}`);
-      rows.push({ vehicle_id: id, storage_path: storagePath, sort_order: index, is_cover: index === 0 });
+      const blur = await sharp(buffer).resize({ width: 16 }).webp({ quality: 40 }).toBuffer();
+      rows.push({ vehicle_id: id, storage_path: storagePath, sort_order: index, is_cover: index === 0, blur_data_url: `data:image/webp;base64,${blur.toString("base64")}` });
     }
     if (rows.length) {
       const { error: imageError } = await supabase.from("vehicle_images").insert(rows);

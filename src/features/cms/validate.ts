@@ -18,10 +18,13 @@ export function isAllowedMediaUrl(src: string) {
   }
 }
 
-function cleanImage(value: unknown, fallbackAlt = ""): { src: string; alt: string } {
+function cleanImage(value: unknown, fallbackAlt = ""): { src: string; alt: string; blur?: string } {
   const source = isObject(value) ? value : {};
   const src = text(source.src, 600);
-  return { src: isAllowedMediaUrl(src) ? src : "", alt: text(source.alt ?? fallbackAlt, 125) };
+  const out: { src: string; alt: string; blur?: string } = { src: isAllowedMediaUrl(src) ? src : "", alt: text(source.alt ?? fallbackAlt, 125) };
+  // A preview is only ever a tiny inline picture.
+  if (typeof source.blur === "string" && /^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(source.blur) && source.blur.length < 2000) out.blur = source.blur;
+  return out;
 }
 
 function cleanItem(item: unknown, max: number): unknown {

@@ -1,3 +1,4 @@
+import { blurFromBlob } from "@/lib/blur";
 import { createClient } from "@/lib/supabase/client";
 import type { ImageCategory, SavedImage } from "@/features/inventory/vehicle-form/schema";
 
@@ -16,6 +17,8 @@ export type PickedImage = {
   file?: File;
   path?: string;
   category?: ImageCategory;
+  /** Tiny blurred preview of a stored photo. */
+  blur?: string | null;
 };
 
 /** Why a file cannot be used, or null when it is fine. */
@@ -68,7 +71,7 @@ export async function uploadVehicleImages(
       const { category, image } = jobs[index];
       if (!image.file) {
         // Already stored: keep it as it is.
-        saved[index] = { path: image.path!, category };
+        saved[index] = { path: image.path!, category, blur: image.blur ?? null };
         onProgress(++done, jobs.length);
         continue;
       }
@@ -78,7 +81,7 @@ export async function uploadVehicleImages(
         .from("vehicle-images")
         .upload(path, blob, { contentType: blob.type, upsert: false });
       if (error) throw new Error(error.message);
-      saved[index] = { path, category };
+      saved[index] = { path, category, blur: await blurFromBlob(blob) };
       onProgress(++done, jobs.length);
     }
   }

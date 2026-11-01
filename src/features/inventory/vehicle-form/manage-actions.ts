@@ -70,7 +70,7 @@ export async function updateVehicle(rawInput: unknown): Promise<Result> {
   const { error } = await supabase.from("vehicles").update(columns).eq("id", id);
   if (error) return { ok: false, error: error.message };
 
-  const { data: stored } = await supabase.from("vehicle_images").select("storage_path").eq("vehicle_id", id);
+  const { data: stored } = await supabase.from("vehicle_images").select("storage_path, blur_data_url").eq("vehicle_id", id);
   const storedPaths = (stored ?? []).map((row) => row.storage_path);
 
   // Rewrite the photo rows in the new order: exterior first, the first photo is the cover.
@@ -87,12 +87,13 @@ export async function updateVehicle(rawInput: unknown): Promise<Result> {
         storage_path: image.path,
         sort_order: index,
         is_cover: index === 0,
+        blur_data_url: image.blur ?? null,
       })),
     );
     if (insertError) {
       // Put the old rows back so the vehicle is not left without photos.
       await supabase.from("vehicle_images").insert(
-        storedPaths.map((path, index) => ({ vehicle_id: id, storage_path: path, sort_order: index, is_cover: index === 0 })),
+        (stored ?? []).map((row, index) => ({ vehicle_id: id, storage_path: row.storage_path, sort_order: index, is_cover: index === 0, blur_data_url: row.blur_data_url })),
       );
       return { ok: false, error: `The photos could not be saved: ${insertError.message}` };
     }

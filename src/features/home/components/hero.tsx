@@ -10,8 +10,8 @@ import { HeroVideo } from "@/features/home/components/hero-video";
 type HeroProps = {
   title: string;
   subtitle: string;
-  image: { src: string; alt: string };
-  imageMobile: { src: string; alt: string };
+  image: { src: string; alt: string; blur?: string };
+  imageMobile: { src: string; alt: string; blur?: string };
   video: { src: string; poster: string };
 };
 

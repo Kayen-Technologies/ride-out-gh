@@ -75,6 +75,7 @@ function CarCard({ car }: { car: HomeCar }) {
         {car.image ? (
           <SmartImage
             src={car.image}
+            blurDataURL={car.blur ?? undefined}
             alt={car.title}
             fill
             sizes="(min-width: 1024px) 310px, 348px"
@@ -191,6 +192,7 @@ export function CarsSearch({
               {featured.image ? (
                 <SmartImage
                   src={featured.image}
+                  blurDataURL={featured.blur ?? undefined}
                   alt={featured.title}
                   fill
                   sizes="978px"

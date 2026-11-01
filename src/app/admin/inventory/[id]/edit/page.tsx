@@ -63,6 +63,7 @@ async function EditContent({ params }: PageProps) {
           previewUrl: vehicleImageUrl(image.path),
           path: image.path,
           category: categoryFromPath(image.path),
+          blur: image.blur,
         })),
       }}
     />

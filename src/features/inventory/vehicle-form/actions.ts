@@ -91,6 +91,7 @@ export async function saveVehicle(rawInput: unknown): Promise<SaveVehicleResult>
         storage_path: image.path,
         sort_order: index,
         is_cover: index === 0,
+        blur_data_url: image.blur ?? null,
       })),
     );
     if (imageError) {
