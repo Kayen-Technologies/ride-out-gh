@@ -95,3 +95,35 @@ export async function listVehicles(input: {
     totalPages: Math.max(1, Math.ceil(total / INVENTORY_PAGE_SIZE)),
   };
 }
+
+export type VehicleDetail = {
+  vehicle: VehicleRow;
+  images: { id: string; path: string; sortOrder: number; isCover: boolean }[];
+};
+
+/** One vehicle with its photos in display order, or null when the id does not exist. */
+export async function getVehicleDetail(id: string): Promise<VehicleDetail | null> {
+  // A malformed id would make Postgres throw on the uuid cast, so treat it as "not found".
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const supabase = await createClient();
+  const [{ data: vehicle, error }, { data: images, error: imageError }] = await Promise.all([
+    supabase.from("vehicles").select("*").eq("id", id).maybeSingle(),
+    supabase
+      .from("vehicle_images")
+      .select("id, storage_path, sort_order, is_cover")
+      .eq("vehicle_id", id)
+      .order("sort_order"),
+  ]);
+  if (error) throw error;
+  if (imageError) throw imageError;
+  if (!vehicle) return null;
+  return {
+    vehicle,
+    images: (images ?? []).map((image) => ({
+      id: image.id,
+      path: image.storage_path,
+      sortOrder: image.sort_order,
+      isCover: image.is_cover,
+    })),
+  };
+}

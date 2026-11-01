@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { InventoryRowActions } from "@/features/inventory/components/row-actions";
 import type { InventoryVehicle } from "@/features/inventory/queries";
 import { formatVehicleRentPrice, formatVehicleSalePrice } from "@/lib/format";
 import { availabilityLabel, listingPurposeLabel } from "@/lib/status";
@@ -101,16 +102,24 @@ export function InventoryDataTable({ rows }: { rows: InventoryVehicle[] }) {
   return (
     <div className="flex flex-col gap-6">
       {table.getRowModel().rows.map((row) => (
-        <Link
+        <div
           key={row.original.id}
-          href={`/admin/inventory/${row.original.id}`}
-          className="relative block min-h-[158px] rounded-xl bg-white/10 px-6 py-6 transition-colors hover:bg-white/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-8"
+          className="group relative min-h-[158px] rounded-xl bg-white/10 px-6 py-6 transition-colors hover:bg-white/[0.14] sm:px-8"
         >
-          {flexRender(
-            row.getVisibleCells()[0].column.columnDef.cell,
-            row.getVisibleCells()[0].getContext(),
-          )}
-        </Link>
+          {/* The whole row opens the vehicle; the edit and delete buttons sit above this link. */}
+          <Link
+            href={`/admin/inventory/${row.original.id}`}
+            aria-label={`Open ${vehicleTitle(row.original)}`}
+            className="absolute inset-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <div className="pointer-events-none relative">
+            {flexRender(
+              row.getVisibleCells()[0].column.columnDef.cell,
+              row.getVisibleCells()[0].getContext(),
+            )}
+          </div>
+          <InventoryRowActions id={row.original.id} title={vehicleTitle(row.original)} />
+        </div>
       ))}
     </div>
   );

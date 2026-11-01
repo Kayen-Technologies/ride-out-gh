@@ -1,9 +1,10 @@
 import { AdminPage } from "@/components/admin/admin-page";
+import { VehicleWizard } from "@/features/inventory/vehicle-form/components/vehicle-wizard";
 
 export default function AdminInventoryNewPage() {
   return (
-    <AdminPage title="Add vehicle" breadcrumb="Workspace / Vehicle Inventory / Add vehicle">
-      <p className="text-muted-foreground">Add vehicle wizard (task 2.2).</p>
+    <AdminPage title="Vehicle Inventory" breadcrumb="Workspace / Vehicle Inventory / Add vehicle">
+      <VehicleWizard />
     </AdminPage>
   );
 }
