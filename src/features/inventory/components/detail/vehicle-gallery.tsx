@@ -10,7 +10,7 @@ import { cn } from "cn";
  * Detail page photos (Figma 120:4459): one large photo and up to two beside it, 505 px tall on desktop,
  * with "See Gallery" on the last tile. Any tile opens the full-screen viewer.
  */
-export function VehicleGallery({ photos, title }: { photos: GalleryPhoto[]; title: string }) {
+export function VehicleGallery({ photos, title, emptyMessage = "No photos yet. Edit the vehicle to add some." }: { photos: GalleryPhoto[]; title: string; emptyMessage?: string }) {
   const [open, setOpen] = useState<number | null>(null);
   const opener = useRef<HTMLElement | null>(null);
   const close = useCallback(() => {
@@ -22,7 +22,7 @@ export function VehicleGallery({ photos, title }: { photos: GalleryPhoto[]; titl
     return (
       <div className="flex h-[260px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/30 text-text-70 lg:h-[505px]">
         <Car className="size-10" aria-hidden />
-        <p className="text-sm">No photos yet. Edit the vehicle to add some.</p>
+        <p className="text-sm">{emptyMessage}</p>
       </div>
     );
   }

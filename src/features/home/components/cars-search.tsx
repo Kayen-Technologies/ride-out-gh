@@ -155,7 +155,7 @@ export function CarsSearch({
               options={[]}
             />
             <SearchSelect
-              name="budget"
+              name="maxPrice"
               label="Budget"
               anyLabel="Any Budget"
               options={budgets}
