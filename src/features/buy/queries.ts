@@ -69,6 +69,11 @@ export async function searchCars(filters: BuyFilters): Promise<SearchResult> {
 
   const from = (filters.page - 1) * PAGE_SIZE;
   const { data, count, error } = await query.range(from, from + PAGE_SIZE - 1);
+  if (error?.code === "PGRST103" && filters.page > 1) {
+    // Asked for a page past the end. Report the real total so the page can send the visitor to the last one.
+    const firstPage = await searchCars({ ...filters, page: 1 });
+    return { cars: [], total: firstPage.total, page: filters.page, totalPages: firstPage.totalPages };
+  }
   if (error || !data) return empty;
 
   const { data: covers } = data.length
@@ -102,15 +107,20 @@ export async function searchCars(filters: BuyFilters): Promise<SearchResult> {
   };
 }
 
-export type Facets = { brands: string[]; models: string[]; colours: string[] };
+export type Facets = {
+  brands: string[];
+  /** Models for each brand, so the model list can follow the chosen brand without a round trip. */
+  modelsByBrand: Record<string, string[]>;
+  colours: string[];
+};
 
 /** Choices for the filter form, taken from the cars that are actually on sale. */
-export async function getFacets(brand: string | undefined): Promise<Facets> {
+export async function getFacets(): Promise<Facets> {
   "use cache";
   cacheTag("vehicles");
   cacheLife("minutes");
 
-  if (!hasSupabaseEnv()) return { brands: [], models: [], colours: [] };
+  if (!hasSupabaseEnv()) return { brands: [], modelsByBrand: {}, colours: [] };
   const { data } = await createClient()
     .from("vehicles")
     .select("brand, model, exterior_colour")
@@ -122,13 +132,16 @@ export async function getFacets(brand: string | undefined): Promise<Facets> {
     [...new Set(values.filter((v): v is string => !!v))].sort((a, b) =>
       a.localeCompare(b),
     );
+  const brands = uniq(rows.map((r) => r.brand));
+  const modelsByBrand = Object.fromEntries(
+    brands.map((brand) => [
+      brand,
+      uniq(rows.filter((r) => r.brand === brand).map((r) => r.model)),
+    ]),
+  );
   return {
-    brands: uniq(rows.map((r) => r.brand)),
-    models: uniq(
-      rows
-        .filter((r) => !brand || r.brand.toLowerCase() === brand.toLowerCase())
-        .map((r) => r.model),
-    ),
+    brands,
+    modelsByBrand,
     colours: uniq(rows.map((r) => r.exterior_colour)),
   };
 }

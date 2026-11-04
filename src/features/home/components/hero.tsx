@@ -26,7 +26,7 @@ export function Hero({
     alt: "",
     fill: true,
     sizes: "100vw",
-    priority: true,
+    preload: true,
   } as const;
   const { props: desktop } = getImageProps({ ...common, src: image.src });
   const { props: mobile } = getImageProps({ ...common, src: imageMobile.src });

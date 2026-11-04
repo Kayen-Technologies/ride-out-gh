@@ -1,13 +1,21 @@
 import { ArrowDown, ListFilter } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { Container } from "@/components/layout/container";
 import { SmartImage } from "@/components/media/smart-image";
+import { Pagination } from "@/features/buy/components/pagination";
 import { CarRow } from "@/features/buy/components/car-row";
 import { FiltersPanel } from "@/features/buy/components/filters-panel";
+import { MobileFilterBar } from "@/features/buy/components/mobile-filter-bar";
 import { getFacets, searchCars } from "@/features/buy/queries";
-import { buyQuery, parseBuySearch, SORTS } from "@/features/buy/search-params";
+import {
+  buyQuery,
+  PAGE_SIZE,
+  parseBuySearch,
+  SORTS,
+} from "@/features/buy/search-params";
 import { getPageContent } from "@/features/cms/content";
 import { cn } from "cn";
 
@@ -33,52 +41,63 @@ export default function BuyPage({ searchParams }: PageProps) {
   );
 }
 
+/** Sizes of the five hero photos, from Figma 120:16313 (mobile, first four) and 1:3047 (desktop). */
+const collageSizes = [
+  "h-[58px] w-[79px] lg:h-[100px] lg:w-[114px]",
+  "h-[104px] w-[79px] lg:h-[150px] lg:w-[115px]",
+  "h-[71px] w-[58px] lg:h-[102px] lg:w-[84px]",
+  "h-[109px] w-[90px] rounded-full lg:h-[150px] lg:w-[130px]",
+  "hidden lg:block lg:h-[102px] lg:w-[84px]",
+];
+
 async function Results({ searchParams }: PageProps) {
   const filters = parseBuySearch(await searchParams);
   const [content, facets, result] = await Promise.all([
     getPageContent("buy"),
-    getFacets(filters.brand),
+    getFacets(),
     searchCars(filters),
   ]);
+  // A page number past the end (an old bookmark after cars were removed) goes to the last real page.
+  if (
+    result.cars.length === 0 &&
+    result.total > 0 &&
+    filters.page > result.totalPages
+  ) {
+    redirect(`/buy${buyQuery(filters, { page: result.totalPages })}`);
+  }
   const collage = result.cars.filter((c) => c.image).slice(0, 5);
 
   return (
     <>
-      <section className="w-full bg-black">
-        <Container className="grid gap-10 pt-14 pb-14 lg:grid-cols-[1fr_564px] lg:items-center lg:pt-[72px] lg:pb-[72px]">
+      <section className="w-full bg-[#111] lg:bg-black">
+        <Container className="grid gap-10 pt-6 pb-[62px] lg:grid-cols-[1fr_564px] lg:items-center lg:gap-10 lg:pt-[72px] lg:pb-[72px]">
           <div className="flex flex-col gap-8">
-            <div className="flex flex-col gap-4">
-              <h1 className="font-display max-w-[480px] text-[32px] leading-[1.1] text-white lg:text-[48px]">
+            <div className="flex flex-col gap-4 lg:gap-4">
+              <h1 className="font-display max-w-[480px] text-2xl leading-[1.2] text-white lg:text-[48px] lg:leading-[1.1]">
                 {content.hero.title}
               </h1>
-              <p className="max-w-[460px] text-sm leading-[1.5] text-white/80 lg:text-base">
+              <p className="max-w-[460px] text-sm leading-[1.4] text-white lg:text-base lg:leading-[1.5] lg:text-white/80">
                 {content.hero.body}
               </p>
             </div>
             <a
               href="#available-cars"
-              className="inline-flex h-12 w-fit items-center gap-2 rounded-full border border-white/70 px-6 text-base text-white hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="mt-2.5 inline-flex h-12 w-fit items-center gap-2 rounded-full border border-white/70 px-8 text-sm lg:mt-0 text-white hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-ring/50 lg:px-6 lg:text-base"
             >
               Explore our fleet
               <ArrowDown className="size-4" aria-hidden />
             </a>
           </div>
           <ul
-            className="flex items-end justify-end gap-3 max-lg:hidden"
+            className="flex items-end justify-center gap-2 lg:justify-end lg:gap-3"
             aria-hidden
           >
             {collage.map((car, i) => (
               <li
                 key={car.id}
                 className={cn(
-                  "relative overflow-hidden bg-[#222]",
-                  [
-                    "h-[100px] w-[114px]",
-                    "h-[150px] w-[115px]",
-                    "h-[102px] w-[84px]",
-                    "h-[150px] w-[130px] rounded-full",
-                    "h-[102px] w-[84px]",
-                  ][i],
+                  "relative overflow-hidden rounded-sm bg-[#484848] lg:rounded-none",
+                  collageSizes[i],
                 )}
               >
                 <SmartImage
@@ -98,10 +117,21 @@ async function Results({ searchParams }: PageProps) {
       <section
         id="available-cars"
         aria-labelledby="available-title"
-        className="w-full scroll-mt-4 bg-black"
+        className="w-full scroll-mt-4 bg-[#111] lg:bg-black"
       >
-        <Container className="pb-14 lg:pb-[100px]">
-          <div className="flex items-end justify-between gap-4 pb-8">
+        <Container className="pt-6 pb-14 lg:pt-0 lg:pb-[100px]">
+          <div className="pb-10 lg:hidden">
+            <MobileFilterBar filters={filters} facets={facets}>
+              <FiltersPanel
+                filters={filters}
+                facets={facets}
+                variant="sheet"
+                total={result.total}
+              />
+            </MobileFilterBar>
+          </div>
+
+          <div className="flex items-end justify-between gap-4 pb-8 max-lg:hidden">
             <div>
               <h2
                 id="available-title"
@@ -136,22 +166,16 @@ async function Results({ searchParams }: PageProps) {
               </ul>
             </details>
           </div>
+          <h2 id="available-title-mobile" className="sr-only lg:hidden">
+            Available cars, {result.total} found
+          </h2>
 
           <div className="grid gap-6 lg:grid-cols-[414px_1fr] lg:gap-[28px]">
-            <details open className="group lg:block">
-              <summary className="mb-4 flex cursor-pointer list-none items-center justify-between rounded-full border border-white/30 px-5 py-3 text-white lg:hidden">
-                Filters
-                <span
-                  aria-hidden
-                  className="transition-transform group-open:rotate-180"
-                >
-                  ⌄
-                </span>
-              </summary>
+            <div className="max-lg:hidden">
               <FiltersPanel filters={filters} facets={facets} />
-            </details>
+            </div>
 
-            <div className="flex min-w-0 flex-col gap-5">
+            <div className="flex min-w-0 flex-col gap-12 transition-opacity duration-200 lg:gap-5 [html[data-filtering]_&]:opacity-50">
               {result.cars.length === 0 ? (
                 <div className="rounded-lg border border-white/15 p-10 text-center text-white">
                   <p className="text-lg font-medium">
@@ -168,56 +192,37 @@ async function Results({ searchParams }: PageProps) {
                   </Link>
                 </div>
               ) : (
-                result.cars.map((car) => <CarRow key={car.id} car={car} />)
+                result.cars.map((car, index) => (
+                  <CarRow key={car.id} car={car} priority={index < 3} />
+                ))
               )}
 
-              {result.totalPages > 1 ? (
-                <nav
-                  aria-label="Pages"
-                  className="flex items-center justify-between pt-4 text-sm text-white"
-                >
-                  {result.page > 1 ? (
-                    <Link
-                      href={`/buy${buyQuery(filters, { page: result.page - 1 })}`}
-                      className="rounded-full border border-white/30 px-5 py-2 hover:bg-white/10"
-                    >
-                      Previous
-                    </Link>
-                  ) : (
-                    <span />
-                  )}
-                  <span className="text-white/60">
-                    Page {result.page} of {result.totalPages}
-                  </span>
-                  {result.page < result.totalPages ? (
-                    <Link
-                      href={`/buy${buyQuery(filters, { page: result.page + 1 })}`}
-                      className="rounded-full border border-white/30 px-5 py-2 hover:bg-white/10"
-                    >
-                      Next
-                    </Link>
-                  ) : (
-                    <span />
-                  )}
-                </nav>
-              ) : null}
+              <Pagination
+                page={result.page}
+                totalPages={result.totalPages}
+                total={result.total}
+                pageSize={PAGE_SIZE}
+                hrefFor={(target) =>
+                  `/buy${buyQuery(filters, { page: target })}`
+                }
+              />
             </div>
           </div>
         </Container>
       </section>
 
-      <section className="w-full bg-black px-0 pb-14 lg:pb-[100px]">
+      <section className="w-full bg-[#111] pb-14 lg:bg-black lg:pb-[100px]">
         <Container>
-          <div className="flex flex-col gap-6 rounded-[40px] bg-[#2a2a2a] p-8 lg:p-14">
+          <div className="flex flex-col items-center gap-6 rounded-[40px] bg-[#2a2a2a] px-5 py-10 text-center lg:items-start lg:p-14 lg:text-left">
             <h2 className="font-display max-w-[460px] text-2xl leading-[1.1] text-white lg:text-[32px]">
               {content.still_looking.title}
             </h2>
-            <p className="max-w-[460px] text-base text-white">
+            <p className="max-w-[460px] text-sm text-white lg:text-base">
               {content.still_looking.body}
             </p>
             <Link
               href="/import"
-              className="inline-flex h-12 w-fit items-center rounded-full border border-white/70 px-6 text-base text-white hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="inline-flex h-12 w-fit items-center rounded-full border border-white/70 px-6 text-sm text-white hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-ring/50 lg:text-base"
             >
               {content.still_looking.cta}
             </Link>

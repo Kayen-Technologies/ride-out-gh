@@ -6,7 +6,7 @@ import {
   TRANSMISSIONS,
 } from "@/features/inventory/vehicle-form/schema";
 
-export const PAGE_SIZE = 8;
+export const PAGE_SIZE = 12;
 export const SORTS = [
   { value: "newest", label: "Newest first" },
   { value: "price-asc", label: "Price: low to high" },
