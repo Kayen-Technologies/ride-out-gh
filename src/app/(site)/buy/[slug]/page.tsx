@@ -64,13 +64,15 @@ function SpecRow({
   dot?: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-[#e8e8e8] py-4 text-sm last:border-0">
-      <dt className="text-[#555]">{label}</dt>
-      <dd className="flex items-center gap-2 font-medium text-[#111]">
+    <div className="flex items-center justify-between gap-4 border-b border-[#e8e8e8] py-[23.5px] text-sm leading-none last:border-0 lg:py-4 lg:leading-5">
+      <dt className="font-medium text-[#4f4d55] lg:font-normal lg:text-[#555]">
+        {label}
+      </dt>
+      <dd className="flex items-center gap-2 font-semibold text-[#1e1e1e] lg:font-medium lg:text-[#111]">
         {dot ? (
           <span
             aria-hidden
-            className="size-3 rounded-full"
+            className="size-3.5 rounded-full lg:size-3"
             style={{ background: dot }}
           />
         ) : null}
@@ -110,9 +112,9 @@ async function Car_({ params }: PageProps) {
   ].filter((fact) => fact.label);
 
   return (
-    <div className="w-full bg-[#171717]">
-      <Container className="flex flex-col gap-10 pt-8 pb-14 lg:pb-[100px]">
-        <div className="flex items-center justify-between gap-4">
+    <div className="w-full bg-[#111] lg:bg-[#171717]">
+      <Container className="flex flex-col pt-[10px] pb-14 lg:gap-10 lg:pt-8 lg:pb-[100px]">
+        <div className="hidden items-center justify-between gap-4 lg:flex">
           <nav aria-label="Breadcrumb" className="min-w-0 text-sm text-white">
             <ol className="flex flex-wrap gap-x-2">
               <li>
@@ -150,27 +152,28 @@ async function Car_({ params }: PageProps) {
           title={car.title}
           photos={car.photos}
           emptyMessage="Photos are coming soon."
+          singleOnMobile
         />
 
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
+        <div className="mt-[23px] flex flex-col gap-11 lg:mt-0 lg:gap-8">
+          <div className="flex flex-col gap-11 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
             <div className="flex flex-col gap-4">
-              <h1 className="text-2xl leading-8 font-normal text-white uppercase lg:text-[32px]">
+              <h1 className="text-2xl leading-none font-medium text-white uppercase lg:text-[32px] lg:leading-8 lg:font-normal">
                 {car.title}
               </h1>
-              <span className="inline-flex w-fit items-center rounded-md bg-[#444] px-4 py-2 text-xl text-white lg:text-2xl">
+              <span className="inline-flex h-11 w-fit items-center rounded-[4px] bg-[#404040] px-4 text-xl font-semibold text-white lg:rounded-md lg:text-2xl lg:font-normal">
                 {ghs(car.price)}
               </span>
             </div>
             {facts.length ? (
-              <ul className="flex flex-wrap gap-6 text-xs text-white lg:gap-10">
+              <ul className="leading-none lg:leading-normal flex justify-between gap-2 px-px text-sm font-medium text-[#cbcbcb] lg:justify-start lg:gap-10 lg:px-0 lg:text-xs lg:font-normal lg:text-white">
                 {facts.map(({ Icon, label }) => (
                   <li
                     key={label}
-                    className="flex min-w-[56px] flex-col items-center gap-2"
+                    className="flex min-w-[30px] flex-col items-center gap-3 lg:min-w-[56px] lg:gap-2"
                   >
-                    <span className="flex size-6 items-center justify-center rounded-[3px] border border-white/70">
-                      <Icon className="size-4" aria-hidden />
+                    <span className="flex size-[30px] items-center justify-center rounded-[3px] border border-white/80 text-white lg:size-6">
+                      <Icon className="size-[18px] lg:size-4" aria-hidden />
                     </span>
                     {label}
                   </li>
@@ -179,24 +182,24 @@ async function Car_({ params }: PageProps) {
             ) : null}
           </div>
           {car.description ? (
-            <div className="flex max-w-[560px] flex-col gap-3">
-              <h2 className="text-xl text-white">About this car</h2>
-              <p className="text-sm leading-6 whitespace-pre-line text-white/70">
+            <div className="flex max-w-[560px] flex-col gap-4 lg:gap-3">
+              <h2 className="text-xl font-medium text-white">About this car</h2>
+              <p className="text-sm leading-[1.5] whitespace-pre-line text-[#a6a6a6] lg:leading-6 lg:text-white/70">
                 {car.description}
               </p>
             </div>
           ) : null}
         </div>
 
-        <div className="grid items-start gap-6 lg:grid-cols-2">
-          <div className="flex flex-col gap-6">
+        <div className="mt-8 grid items-start gap-4 lg:mt-0 lg:grid-cols-2 lg:gap-6">
+          <div className="flex flex-col gap-4 lg:gap-6">
             <section
               aria-labelledby="specs-title"
-              className="rounded-3xl bg-white p-6 lg:px-[18px]"
+              className="rounded-[20px] bg-white px-6 pt-8 pb-9 lg:rounded-3xl lg:p-6 lg:px-[18px]"
             >
               <h2
                 id="specs-title"
-                className="mb-2 text-xl font-medium text-[#111]"
+                className="mb-6 text-2xl leading-none font-semibold text-[#1e1e1e] lg:mb-2 lg:text-xl lg:leading-7 lg:font-medium lg:text-[#111]"
               >
                 Features &amp; Specs
               </h2>
@@ -229,9 +232,12 @@ async function Car_({ params }: PageProps) {
 
             <section
               aria-labelledby="condition-title"
-              className="rounded-3xl bg-[#1c1c1c] p-6 lg:px-[18px]"
+              className="rounded-[20px] bg-[#181818] px-6 pt-8 pb-7 lg:rounded-3xl lg:bg-[#1c1c1c] lg:p-6 lg:px-[18px]"
             >
-              <h2 id="condition-title" className="mb-2 text-xl text-white">
+              <h2
+                id="condition-title"
+                className="mb-6 text-xl leading-none font-semibold text-white lg:mb-2 lg:leading-7 lg:font-normal"
+              >
                 Vehicle Condition
               </h2>
               <dl className="text-white">
@@ -252,10 +258,10 @@ async function Car_({ params }: PageProps) {
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="flex items-center justify-between gap-4 border-b border-white/80 py-4 text-sm last:border-0"
+                    className="flex items-center justify-between gap-4 border-b border-white/80 py-[23.5px] text-sm leading-none last:border-0 lg:py-4 lg:leading-5"
                   >
-                    <dt>{label}</dt>
-                    <dd className="font-medium">{value}</dd>
+                    <dt className="font-medium">{label}</dt>
+                    <dd className="font-semibold lg:font-medium">{value}</dd>
                   </div>
                 ))}
               </dl>
@@ -264,38 +270,38 @@ async function Car_({ params }: PageProps) {
 
           <section
             aria-labelledby="interest-title"
-            className="rounded-3xl bg-black p-6 lg:p-8"
+            className="mt-4 rounded-[20px] bg-black p-6 pt-8 lg:mt-0 lg:rounded-3xl lg:p-8"
           >
             <h2
               id="interest-title"
-              className="border-b border-white/80 pb-6 text-xl text-white"
+              className="border-b border-white/80 pb-[26px] text-xl font-semibold text-white lg:font-normal"
             >
               Interested in this car?
             </h2>
-            <p className="mt-6 text-sm leading-6 text-white/70">
+            <p className="mt-[34px] text-sm leading-[1.5] text-[#a6a6a6] lg:mt-6 lg:leading-6 lg:text-white/70">
               Interested in this vehicle? Let the Ride-Out team know and
               we&apos;ll help you with the next steps, answer your questions,
               and guide you through the purchase process.
             </p>
-            <div className="mt-6 flex flex-col gap-3 text-sm text-white sm:flex-row sm:gap-8">
+            <div className="mt-8 flex flex-col gap-[18px] text-sm text-white lg:mt-6 lg:flex-row lg:gap-8">
               <a
                 href={`tel:${business.phones[0]?.replace(/\s/g, "")}`}
-                className="flex items-center gap-2 hover:text-primary"
+                className="flex items-center gap-3 hover:text-primary lg:gap-2"
               >
-                <Phone className="size-4" aria-hidden />
+                <Phone className="size-5 lg:size-4" aria-hidden />
                 {business.phones[0]}
               </a>
               <a
                 href={`mailto:${business.email}`}
-                className="flex items-center gap-2 hover:text-primary"
+                className="flex items-center gap-3 hover:text-primary lg:gap-2"
               >
-                <Mail className="size-4" aria-hidden />
+                <Mail className="size-5 lg:size-4" aria-hidden />
                 {business.email}
               </a>
             </div>
             <a
               href={`mailto:${business.email}?subject=${encodeURIComponent(`I'm interested in the ${car.title}`)}&body=${encodeURIComponent(`Hello Ride Out,\n\nI'm interested in the ${car.title} (${ghs(car.price)}). Please contact me with the next steps.\n`)}`}
-              className="mt-8 flex h-12 w-full items-center justify-center rounded-full bg-primary text-base font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="mt-8 flex h-[38px] w-full items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50 lg:h-12 lg:text-base"
             >
               I&apos;m Interested
             </a>

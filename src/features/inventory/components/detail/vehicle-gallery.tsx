@@ -3,14 +3,28 @@
 import { Car, Images } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
-import { PhotoGallery, type GalleryPhoto } from "@/components/gallery/photo-gallery";
+import {
+  PhotoGallery,
+  type GalleryPhoto,
+} from "@/components/gallery/photo-gallery";
 import { cn } from "cn";
 
 /**
  * Detail page photos (Figma 120:4459): one large photo and up to two beside it, 505 px tall on desktop,
  * with "See Gallery" on the last tile. Any tile opens the full-screen viewer.
  */
-export function VehicleGallery({ photos, title, emptyMessage = "No photos yet. Edit the vehicle to add some." }: { photos: GalleryPhoto[]; title: string; emptyMessage?: string }) {
+export function VehicleGallery({
+  photos,
+  title,
+  emptyMessage = "No photos yet. Edit the vehicle to add some.",
+  singleOnMobile = false,
+}: {
+  photos: GalleryPhoto[];
+  title: string;
+  emptyMessage?: string;
+  /** On small screens show just the first photo with a "See Gallery" button on it (the public car page, Figma 120:14588). */
+  singleOnMobile?: boolean;
+}) {
   const [open, setOpen] = useState<number | null>(null);
   const opener = useRef<HTMLElement | null>(null);
   const close = useCallback(() => {
@@ -42,21 +56,47 @@ export function VehicleGallery({ photos, title, emptyMessage = "No photos yet. E
           side.length > 0 ? "lg:grid-cols-[622fr_454fr]" : "lg:grid-cols-1",
         )}
       >
-        <button
-          type="button"
-          onClick={(event) => show(0, event.currentTarget)}
-          aria-label={`Open photo 1 of ${photos.length}`}
-          className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#333] focus-visible:ring-3 focus-visible:ring-ring/50 lg:aspect-auto"
+        <div
+          className={cn(
+            "relative overflow-hidden bg-[#333] lg:aspect-auto lg:rounded-xl",
+            singleOnMobile
+              ? "aspect-[360/214] rounded-[7px]"
+              : "aspect-[4/3] rounded-xl",
+          )}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- remote Supabase photo, sized by its container */}
-          <img src={photos[0].url} alt={title} className="size-full object-cover" />
-        </button>
+          <button
+            type="button"
+            onClick={(event) => show(0, event.currentTarget)}
+            aria-label={`Open photo 1 of ${photos.length}`}
+            className="absolute inset-0 focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote Supabase photo, sized by its container */}
+            <img
+              src={photos[0].url}
+              alt={title}
+              className="size-full object-cover"
+            />
+          </button>
+          {singleOnMobile ? (
+            <button
+              type="button"
+              onClick={(event) => show(0, event.currentTarget)}
+              className="absolute right-3 bottom-3 inline-flex h-9 items-center gap-2 rounded-full bg-[#fbfbfb] px-4 text-sm font-medium text-[#111] shadow-sm hover:bg-white focus-visible:ring-3 focus-visible:ring-ring/50 lg:hidden"
+            >
+              <Images className="size-4" aria-hidden />
+              See Gallery
+            </button>
+          ) : null}
+        </div>
 
         {side.length > 0 ? (
           <div
             className={cn(
               "grid gap-3 lg:gap-4",
-              side.length > 1 ? "grid-cols-2 lg:grid-cols-1 lg:grid-rows-2" : "grid-cols-1",
+              singleOnMobile && "max-lg:hidden",
+              side.length > 1
+                ? "grid-cols-2 lg:grid-cols-1 lg:grid-rows-2"
+                : "grid-cols-1",
             )}
           >
             {side.map((photo, index) => (
@@ -71,7 +111,11 @@ export function VehicleGallery({ photos, title, emptyMessage = "No photos yet. E
                   className="absolute inset-0 focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element -- remote Supabase photo */}
-                  <img src={photo.url} alt="" className="size-full object-cover" />
+                  <img
+                    src={photo.url}
+                    alt=""
+                    className="size-full object-cover"
+                  />
                 </button>
                 {index === side.length - 1 ? (
                   <button
@@ -90,7 +134,13 @@ export function VehicleGallery({ photos, title, emptyMessage = "No photos yet. E
       </div>
 
       {open !== null ? (
-        <PhotoGallery title={title} photos={photos} index={open} onIndex={setOpen} onClose={close} />
+        <PhotoGallery
+          title={title}
+          photos={photos}
+          index={open}
+          onIndex={setOpen}
+          onClose={close}
+        />
       ) : null}
     </>
   );
