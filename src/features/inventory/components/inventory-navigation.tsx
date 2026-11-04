@@ -112,7 +112,13 @@ export function InventoryResultsFrame({
  * Ride Out loader kit: the whole page blurs and the inline car (kit item 03) sits in the centre of the
  * screen while a tab, filter, search or page change loads. A thin progress bar runs along the top.
  */
-export function InventoryLoader() {
+export function InventoryLoader({
+  label = "Loading inventory",
+  hint = "checking the lot…",
+}: {
+  label?: string;
+  hint?: string;
+}) {
   const { pending } = useInventoryNavigation();
   if (!pending || typeof document === "undefined") return null;
 
@@ -129,8 +135,8 @@ export function InventoryLoader() {
         <div className="ro-indeterminate h-full w-[30%] rounded-full bg-primary" />
       </div>
       <InlineCarLoader
-        label="Loading inventory"
-        hint="checking the lot…"
+        label={label}
+        hint={hint}
         className="rounded-2xl bg-card/95 px-12 py-6 shadow-card"
       />
     </div>,
