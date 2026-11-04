@@ -7,7 +7,7 @@ import Link from "next/link";
  * people to a plain /buy address would leave the boxes ticked; this clears them in the form itself first.
  * It stays a real link, so it still works without JavaScript. The sort order is not a filter and stays.
  */
-export function ResetFilters({ className }: { className?: string }) {
+export function ResetFilters({ className, href = "/buy" }: { className?: string; href?: string }) {
   function clear(event: React.MouseEvent<HTMLAnchorElement>) {
     const form = event.currentTarget.closest("form");
     if (!form) return;
@@ -29,7 +29,7 @@ export function ResetFilters({ className }: { className?: string }) {
   }
 
   return (
-    <Link href="/buy" onClick={clear} className={className}>
+    <Link href={href} onClick={clear} className={className}>
       Reset
     </Link>
   );

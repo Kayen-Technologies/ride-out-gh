@@ -14,9 +14,15 @@ const ghs = (amount: number | null) =>
 export function CarRow({
   car,
   priority = false,
+  href = `/buy/${car.slug}`,
+  priceSuffix = "",
 }: {
   car: BuyCar;
   priority?: boolean;
+  /** Where "View details" goes. Defaults to the car's page under /buy. */
+  href?: string;
+  /** Shown after the price, for example "/day" on rentals. */
+  priceSuffix?: string;
 }) {
   return (
     <article className="mx-auto grid w-full max-w-[352px] gap-3 sm:max-w-none sm:grid-cols-[237px_1fr] sm:gap-2">
@@ -49,9 +55,10 @@ export function CarRow({
         <div className="flex flex-col items-center gap-6 sm:w-full sm:flex-row sm:justify-between sm:gap-4">
           <span className="font-display inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-base leading-6 font-medium text-white sm:py-1.5">
             {ghs(car.price)}
+            {car.price == null ? null : priceSuffix}
           </span>
           <Link
-            href={`/buy/${car.slug}`}
+            href={href}
             className="text-[13px] leading-none text-primary hover:underline focus-visible:underline sm:text-xs"
           >
             View details

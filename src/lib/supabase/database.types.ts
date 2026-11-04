@@ -842,6 +842,7 @@ export type Database = {
     Functions: {
       get_published_content: { Args: { p_page: string }; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
+      unavailable_rental_vehicle_ids: { Args: { p_pickup: string; p_return: string }; Returns: string[] }
       publish_content_page: {
         Args: { p_expected_version: number; p_page: string }
         Returns: {

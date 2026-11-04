@@ -8,7 +8,7 @@ import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } f
 
 export type SaveOutcome = "published" | "draft";
 
-function CarSwoosh() {
+export function CarSwoosh() {
   return (
     <svg viewBox="0 0 330 70" aria-hidden className="h-[58px] w-[280px]">
       <path

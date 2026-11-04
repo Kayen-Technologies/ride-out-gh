@@ -29,7 +29,7 @@ export function rejectReason(file: File) {
 }
 
 /** Scales the photo down to a 2000 px long edge and re-encodes it, so uploads stay quick and light. */
-async function shrink(file: File): Promise<{ blob: Blob; extension: string }> {
+export async function shrink(file: File): Promise<{ blob: Blob; extension: string }> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, LONG_EDGE / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");

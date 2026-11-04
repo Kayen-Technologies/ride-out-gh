@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
       : [],
   },
   cacheComponents: true,
+  // The rent request form uploads a photo of the Ghana Card (shrunk in the browser, so well under this).
+  experimental: { serverActions: { bodySizeLimit: "4mb" } },
   partialPrefetching: true,
   turbopack: {
     root,
