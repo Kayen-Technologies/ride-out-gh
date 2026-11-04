@@ -10,7 +10,10 @@ export const IMAGE_CATEGORIES = ["interior", "exterior"] as const;
 export type ImageCategory = (typeof IMAGE_CATEGORIES)[number];
 
 /** Most photos per group the wizard accepts. */
-export const MAX_IMAGES: Record<ImageCategory, number> = { interior: 6, exterior: 12 };
+export const MAX_IMAGES: Record<ImageCategory, number> = {
+  interior: 6,
+  exterior: 12,
+};
 
 const money = (message: string) =>
   z
@@ -56,6 +59,11 @@ const details = {
   location: z.string().trim().min(1, "Enter where the vehicle is.").max(120),
   registration: z.string().trim().max(40),
   description: z.string().trim().max(4000),
+  featured: z.boolean(),
+  featuredOrder: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || /^\d{1,3}$/.test(value), "Use a whole number, for example 1."),
 };
 
 /** Step 1 only, which is also what a draft needs to be saved. */
@@ -64,10 +72,18 @@ export const basicInfoSchema = z.object(basics);
 /** The whole form, checked when the listing is published or the person moves on from Details. */
 export const vehicleFormSchema = z.object({ ...basics, ...details }).superRefine((values, ctx) => {
   if (values.purpose === "sale" && !parseMoney(values.salePrice)) {
-    ctx.addIssue({ code: "custom", path: ["salePrice"], message: "Enter the sale price." });
+    ctx.addIssue({
+      code: "custom",
+      path: ["salePrice"],
+      message: "Enter the sale price.",
+    });
   }
   if (values.purpose === "rent" && !parseMoney(values.dailyRate)) {
-    ctx.addIssue({ code: "custom", path: ["dailyRate"], message: "Enter the daily rental rate." });
+    ctx.addIssue({
+      code: "custom",
+      path: ["dailyRate"],
+      message: "Enter the daily rental rate.",
+    });
   }
 });
 
@@ -90,6 +106,10 @@ export type VehicleFormValues = {
   location: string;
   registration: string;
   description: string;
+  /** Show this car in the homepage search block, ahead of the newest cars. */
+  featured: boolean;
+  /** Position among featured cars: 1 is the big feature card. Empty means after the numbered ones. */
+  featuredOrder: string;
 };
 
 export const defaultVehicleValues: VehicleFormValues = {
@@ -110,6 +130,8 @@ export const defaultVehicleValues: VehicleFormValues = {
   location: "Accra",
   registration: "",
   description: "",
+  featured: false,
+  featuredOrder: "",
 };
 
 export const STEP_FIELDS: Record<1 | 2, (keyof VehicleFormValues)[]> = {
@@ -126,17 +148,29 @@ export const STEP_FIELDS: Record<1 | 2, (keyof VehicleFormValues)[]> = {
     "location",
     "registration",
     "description",
+    "featured",
+    "featuredOrder",
   ],
 };
 
-export type SavedImage = { path: string; category: ImageCategory; blur?: string | null };
+export type SavedImage = {
+  path: string;
+  category: ImageCategory;
+  blur?: string | null;
+};
 
 export const saveVehicleInputSchema = z.object({
   id: z.uuid(),
   intent: z.enum(["draft", "publish"]),
   values: z.looseObject({}),
   images: z
-    .array(z.object({ path: z.string().min(1), category: z.enum(IMAGE_CATEGORIES), blur: z.string().max(2000).nullish() }))
+    .array(
+      z.object({
+        path: z.string().min(1),
+        category: z.enum(IMAGE_CATEGORIES),
+        blur: z.string().max(2000).nullish(),
+      }),
+    )
     .max(MAX_IMAGES.interior + MAX_IMAGES.exterior),
 });
 
@@ -147,6 +181,4 @@ export type SaveVehicleInput = {
   images: SavedImage[];
 };
 
-export type SaveVehicleResult =
-  | { ok: true; id: string; code: string }
-  | { ok: false; error: string };
+export type SaveVehicleResult = { ok: true; id: string; code: string } | { ok: false; error: string };

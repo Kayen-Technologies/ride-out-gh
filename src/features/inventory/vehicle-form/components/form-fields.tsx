@@ -3,21 +3,19 @@
 import { Controller, useFormContext } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { labelFor } from "@/features/inventory/vehicle-form/options";
 import type { VehicleFormValues } from "@/features/inventory/vehicle-form/schema";
 import { cn } from "cn";
 
 type Option = { value: string; label: string };
 
-const controlClass =
-  "h-11 w-full rounded-md border border-input-border bg-input px-3.5 text-sm text-foreground";
+/** The fields that hold text. `featured` is a yes/no switch and has its own control below. */
+type StringField = {
+  [K in keyof VehicleFormValues]: VehicleFormValues[K] extends string ? K : never;
+}[keyof VehicleFormValues];
+
+const controlClass = "h-11 w-full rounded-md border border-input-border bg-input px-3.5 text-sm text-foreground";
 
 /** Label, control and error, in the admin form's 6 px / 20 px rhythm. */
 export function FormField({
@@ -63,7 +61,7 @@ export function TextField({
   inputMode,
   className,
 }: {
-  name: keyof VehicleFormValues;
+  name: StringField;
   label: string;
   required?: boolean;
   placeholder?: string;
@@ -94,7 +92,7 @@ export function SelectField({
   options,
   className,
 }: {
-  name: keyof VehicleFormValues;
+  name: StringField;
   label: string;
   required?: boolean;
   placeholder: string;
@@ -114,11 +112,12 @@ export function SelectField({
               id={`vehicle-${name}`}
               aria-invalid={error ? true : undefined}
               onBlur={field.onBlur}
-              className={cn(controlClass, "data-[size=default]:h-11 dark:bg-input dark:hover:bg-input data-placeholder:text-foreground")}
+              className={cn(
+                controlClass,
+                "data-[size=default]:h-11 dark:bg-input dark:hover:bg-input data-placeholder:text-foreground",
+              )}
             >
-              <SelectValue placeholder={placeholder}>
-                {labelFor(options, field.value) || undefined}
-              </SelectValue>
+              <SelectValue placeholder={placeholder}>{labelFor(options, field.value) || undefined}</SelectValue>
             </SelectTrigger>
             <SelectContent position="popper" className="max-h-72">
               {options.map((option) => (
@@ -139,7 +138,7 @@ export function TextAreaField({
   label,
   placeholder,
 }: {
-  name: keyof VehicleFormValues;
+  name: StringField;
   label: string;
   placeholder?: string;
 }) {
@@ -155,5 +154,36 @@ export function TextAreaField({
         {...register(name)}
       />
     </FormField>
+  );
+}
+
+/** "Feature on homepage": a switch, plus the position among featured cars when it is on (1 = the big card). */
+export function FeatureOnHomepage() {
+  const { register, watch, formState } = useFormContext<VehicleFormValues>();
+  const on = watch("featured");
+  const error = formState.errors.featuredOrder?.message;
+  return (
+    <div className="flex flex-col gap-4">
+      <label className="flex cursor-pointer items-start gap-3 text-foreground">
+        <input type="checkbox" className="mt-1 size-5 shrink-0 accent-[#ffd400]" {...register("featured")} />
+        <span className="flex flex-col gap-1">
+          <span className="text-sm leading-5 font-medium">Feature on homepage</span>
+          <span className="text-xs leading-4 text-text-70">
+            Shows this car in the homepage search block, ahead of the newest cars. Only cars for sale that are published
+            and available appear there.
+          </span>
+        </span>
+      </label>
+      {on ? (
+        <div className="grid gap-x-8 sm:grid-cols-2">
+          <TextField name="featuredOrder" label="Position" placeholder="1 is the big card" inputMode="numeric" />
+          {error ? null : (
+            <p className="self-end pb-3 text-xs text-text-70">
+              Lower numbers come first. Leave empty to go after the numbered ones.
+            </p>
+          )}
+        </div>
+      ) : null}
+    </div>
   );
 }

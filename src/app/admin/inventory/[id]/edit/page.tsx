@@ -49,6 +49,8 @@ async function EditContent({ params }: PageProps) {
     location: text(vehicle.location),
     registration: text(vehicle.registration),
     description: text(vehicle.description),
+    featured: vehicle.is_featured,
+    featuredOrder: vehicle.featured_order == null ? "" : String(vehicle.featured_order),
   };
 
   return (

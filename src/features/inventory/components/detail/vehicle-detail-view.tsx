@@ -6,7 +6,13 @@ import { DeleteVehicle, VehicleActions } from "@/features/inventory/components/d
 import { VehicleGallery } from "@/features/inventory/components/detail/vehicle-gallery";
 import { vehicleImageUrl } from "@/features/inventory/image-url";
 import type { VehicleDetail } from "@/features/inventory/queries";
-import { bodyTypeOptions, conditionOptions, fuelOptions, labelFor, transmissionOptions } from "@/features/inventory/vehicle-form/options";
+import {
+  bodyTypeOptions,
+  conditionOptions,
+  fuelOptions,
+  labelFor,
+  transmissionOptions,
+} from "@/features/inventory/vehicle-form/options";
 import { formatGHS, formatVehicleRentPrice } from "@/lib/format";
 import { availabilityLabel, listingPurposeLabel, listingStatusLabel } from "@/lib/status";
 import { cn } from "cn";
@@ -101,13 +107,22 @@ export function VehicleDetailView({ detail }: { detail: VehicleDetail }) {
             >
               {listingStatusLabel(vehicle.listing_status)}
             </span>
+            {vehicle.is_featured ? (
+              <span className="inline-flex h-9 items-center rounded-full border border-primary px-4 text-sm font-semibold text-foreground">
+                Featured
+                {vehicle.featured_order != null ? ` #${vehicle.featured_order}` : ""}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
 
       <VehicleGallery
         title={title}
-        photos={images.map((image) => ({ id: image.id, url: vehicleImageUrl(image.path) }))}
+        photos={images.map((image) => ({
+          id: image.id,
+          url: vehicleImageUrl(image.path),
+        }))}
       />
 
       <VehicleActions id={vehicle.id} listingStatus={vehicle.listing_status} />

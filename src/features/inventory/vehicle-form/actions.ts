@@ -1,5 +1,7 @@
 "use server";
 
+import { updateTag } from "next/cache";
+
 import { buildVehicleColumns } from "@/features/inventory/vehicle-form/vehicle-columns";
 import { basicInfoSchema, saveVehicleInputSchema, vehicleFormSchema } from "@/features/inventory/vehicle-form/schema";
 import type { SaveVehicleResult } from "@/features/inventory/vehicle-form/schema";
@@ -25,10 +27,18 @@ function firstIssue(error: { issues: { message: string }[] }) {
  */
 export async function saveVehicle(rawInput: unknown): Promise<SaveVehicleResult> {
   const session = await getStaffSession();
-  if (!session?.isStaff) return { ok: false, error: "You need to be signed in as staff to do this." };
+  if (!session?.isStaff)
+    return {
+      ok: false,
+      error: "You need to be signed in as staff to do this.",
+    };
 
   const input = saveVehicleInputSchema.safeParse(rawInput);
-  if (!input.success) return { ok: false, error: "Something went wrong with the form. Refresh and try again." };
+  if (!input.success)
+    return {
+      ok: false,
+      error: "Something went wrong with the form. Refresh and try again.",
+    };
   const { id, intent, images } = input.data;
 
   const basics = basicInfoSchema.safeParse(input.data.values);
@@ -39,7 +49,10 @@ export async function saveVehicle(rawInput: unknown): Promise<SaveVehicleResult>
     const full = vehicleFormSchema.safeParse(input.data.values);
     if (!full.success) return { ok: false, error: firstIssue(full.error) };
     if (!images.some((image) => image.category === "exterior")) {
-      return { ok: false, error: "Add at least one exterior photo before publishing." };
+      return {
+        ok: false,
+        error: "Add at least one exterior photo before publishing.",
+      };
     }
     values = full.data;
   } else {
@@ -76,7 +89,10 @@ export async function saveVehicle(rawInput: unknown): Promise<SaveVehicleResult>
     .single();
 
   if (error || !vehicle) {
-    return { ok: false, error: error?.message ?? "The vehicle could not be saved." };
+    return {
+      ok: false,
+      error: error?.message ?? "The vehicle could not be saved.",
+    };
   }
 
   if (images.length > 0) {
@@ -96,9 +112,13 @@ export async function saveVehicle(rawInput: unknown): Promise<SaveVehicleResult>
     );
     if (imageError) {
       await supabase.from("vehicles").delete().eq("id", vehicle.id);
-      return { ok: false, error: `The photos could not be saved: ${imageError.message}` };
+      return {
+        ok: false,
+        error: `The photos could not be saved: ${imageError.message}`,
+      };
     }
   }
 
+  updateTag("vehicles");
   return { ok: true, id: vehicle.id, code: vehicle.code };
 }

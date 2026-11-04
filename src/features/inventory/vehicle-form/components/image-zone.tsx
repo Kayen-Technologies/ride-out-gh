@@ -21,11 +21,7 @@ import { UploadCloud, X } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import {
-  ACCEPTED_IMAGE_TYPES,
-  rejectReason,
-  type PickedImage,
-} from "@/features/inventory/vehicle-form/image-utils";
+import { ACCEPTED_IMAGE_TYPES, rejectReason, type PickedImage } from "@/features/inventory/vehicle-form/image-utils";
 import { cn } from "cn";
 
 type ImageZoneProps = {
@@ -45,7 +41,9 @@ export function ImageZone({ title, label, hint, note, max, images, onChange }: I
   const [dragOver, setDragOver] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   function addFiles(fileList: FileList | File[]) {
@@ -62,7 +60,12 @@ export function ImageZone({ title, label, hint, note, max, images, onChange }: I
         toast.error(`You can add up to ${max} photos here.`);
         break;
       }
-      accepted.push({ key: crypto.randomUUID(), name: file.name, file, previewUrl: URL.createObjectURL(file) });
+      accepted.push({
+        key: crypto.randomUUID(),
+        name: file.name,
+        file,
+        previewUrl: URL.createObjectURL(file),
+      });
     }
     if (accepted.length) onChange([...images, ...accepted]);
   }
@@ -157,15 +160,7 @@ export function ImageZone({ title, label, hint, note, max, images, onChange }: I
   );
 }
 
-function PhotoTile({
-  image,
-  isDefault,
-  onRemove,
-}: {
-  image: PickedImage;
-  isDefault: boolean;
-  onRemove: () => void;
-}) {
+function PhotoTile({ image, isDefault, onRemove }: { image: PickedImage; isDefault: boolean; onRemove: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: image.key,
   });

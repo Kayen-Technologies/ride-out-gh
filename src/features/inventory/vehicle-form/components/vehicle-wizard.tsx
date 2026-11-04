@@ -14,12 +14,14 @@ import Link from "next/link";
 import { saveVehicle } from "@/features/inventory/vehicle-form/actions";
 import { updateVehicle } from "@/features/inventory/vehicle-form/manage-actions";
 import { ImageZone } from "@/features/inventory/vehicle-form/components/image-zone";
-import { SelectField, TextAreaField, TextField } from "@/features/inventory/vehicle-form/components/form-fields";
-import { ReviewStep } from "@/features/inventory/vehicle-form/components/review-step";
 import {
-  SaveResultDialog,
-  type SaveOutcome,
-} from "@/features/inventory/vehicle-form/components/result-dialog";
+  FeatureOnHomepage,
+  SelectField,
+  TextAreaField,
+  TextField,
+} from "@/features/inventory/vehicle-form/components/form-fields";
+import { ReviewStep } from "@/features/inventory/vehicle-form/components/review-step";
+import { SaveResultDialog, type SaveOutcome } from "@/features/inventory/vehicle-form/components/result-dialog";
 import { WizardStepper } from "@/features/inventory/vehicle-form/components/wizard-stepper";
 import { uploadVehicleImages, type PickedImage } from "@/features/inventory/vehicle-form/image-utils";
 import {
@@ -75,7 +77,10 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
       : emptyImages,
   );
   const [vehicleId, setVehicleId] = useState(() => edit?.id ?? crypto.randomUUID());
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [progress, setProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
   const [saving, setSaving] = useState(false);
   const [outcome, setOutcome] = useState<SaveOutcome | null>(null);
 
@@ -134,11 +139,14 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
     setProgress(null);
     let uploadedPaths: string[] = [];
     try {
-      const uploaded = await uploadVehicleImages(vehicleId, images, (done, total) =>
-        setProgress({ done, total }),
-      );
+      const uploaded = await uploadVehicleImages(vehicleId, images, (done, total) => setProgress({ done, total }));
       uploadedPaths = uploaded.map((image) => image.path);
-      const result = await saveVehicle({ id: vehicleId, intent, values: form.getValues(), images: uploaded });
+      const result = await saveVehicle({
+        id: vehicleId,
+        intent,
+        values: form.getValues(),
+        images: uploaded,
+      });
       if (!result.ok) throw new Error(result.error);
       setOutcome(intent === "publish" ? "published" : "draft");
     } catch (error) {
@@ -170,13 +178,15 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
     setSaving(true);
     setProgress(null);
     try {
-      const uploaded = await uploadVehicleImages(vehicleId, images, (done, total) =>
-        setProgress({ done, total }),
-      );
+      const uploaded = await uploadVehicleImages(vehicleId, images, (done, total) => setProgress({ done, total }));
       const newPaths = uploaded
         .map((image) => image.path)
         .filter((path) => !edit.initialImages.some((initial) => initial.path === path));
-      const result = await updateVehicle({ id: vehicleId, values: form.getValues(), images: uploaded });
+      const result = await updateVehicle({
+        id: vehicleId,
+        values: form.getValues(),
+        images: uploaded,
+      });
       if (!result.ok) {
         // The edit was refused, so the photos uploaded for it are not needed.
         if (newPaths.length) void createClient().storage.from("vehicle-images").remove(newPaths);
@@ -211,11 +221,21 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
         className="flex w-full max-w-[1008px] flex-col gap-6"
       >
         <div ref={topRef} className="flex scroll-mt-6 items-center gap-2 text-foreground">
-          <button type="button" onClick={back} aria-label={step === 1 ? (edit ? "Back to vehicle" : "Back to inventory") : "Previous step"} className="rounded-sm p-0.5 text-sky-300 hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50">
+          <button
+            type="button"
+            onClick={back}
+            aria-label={step === 1 ? (edit ? "Back to vehicle" : "Back to inventory") : "Previous step"}
+            className="rounded-sm p-0.5 text-sky-300 hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
             <ArrowLeft className="size-[18px]" aria-hidden />
           </button>
           {step < 4 ? (
-            <button type="button" onClick={() => void next()} aria-label="Next step" className="rounded-sm p-0.5 text-sky-300 hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50">
+            <button
+              type="button"
+              onClick={() => void next()}
+              aria-label="Next step"
+              className="rounded-sm p-0.5 text-sky-300 hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
               <ArrowRight className="size-[18px]" aria-hidden />
             </button>
           ) : null}
@@ -227,7 +247,9 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
               {step === 1 ? <Car className="size-5" aria-hidden /> : <SquarePen className="size-5" aria-hidden />}
             </span>
             <div>
-              <h1 className="text-base leading-5 font-medium text-foreground">{step === 1 && edit ? "Edit Vehicle" : stepTitles[step]}</h1>
+              <h1 className="text-base leading-5 font-medium text-foreground">
+                {step === 1 && edit ? "Edit Vehicle" : stepTitles[step]}
+              </h1>
               <p className="text-sm leading-5 text-foreground">Step {step} of 4</p>
             </div>
           </div>
@@ -241,8 +263,20 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
             <TextField name="brand" label="Brand" required placeholder="Enter brand name" />
             <TextField name="model" label="Model" required placeholder="Enter model type" />
             <SelectField name="year" label="Year" required placeholder="Select year" options={years} />
-            <SelectField name="purpose" label="Listing purpose" required placeholder="Select purpose" options={purposeOptions} />
-            <SelectField name="condition" label="Vehicle Condition" required placeholder="Select condition" options={conditionOptions} />
+            <SelectField
+              name="purpose"
+              label="Listing purpose"
+              required
+              placeholder="Select purpose"
+              options={purposeOptions}
+            />
+            <SelectField
+              name="condition"
+              label="Vehicle Condition"
+              required
+              placeholder="Select condition"
+              options={conditionOptions}
+            />
           </div>
         ) : null}
 
@@ -253,9 +287,27 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
               <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
                 <TextField name="mileage" label="Mileage (km)" placeholder="e.g. 18,000" inputMode="numeric" />
                 <TextField name="exteriorColour" label="Exterior colour" placeholder="e.g. Red" />
-                <SelectField name="fuelType" label="Fuel Type" required placeholder="Select fuel type" options={fuelOptions} />
-                <SelectField name="transmission" label="Transmission" required placeholder="Select transmission type" options={transmissionOptions} />
-                <SelectField name="bodyType" label="Body Type" required placeholder="Select body type" options={bodyTypeOptions} />
+                <SelectField
+                  name="fuelType"
+                  label="Fuel Type"
+                  required
+                  placeholder="Select fuel type"
+                  options={fuelOptions}
+                />
+                <SelectField
+                  name="transmission"
+                  label="Transmission"
+                  required
+                  placeholder="Select transmission type"
+                  options={transmissionOptions}
+                />
+                <SelectField
+                  name="bodyType"
+                  label="Body Type"
+                  required
+                  placeholder="Select body type"
+                  options={bodyTypeOptions}
+                />
               </div>
             </section>
 
@@ -263,15 +315,39 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
               <h2 className="text-lg leading-6 text-foreground">{sale ? "Pricing" : "Rental Pricing"}</h2>
               <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
                 {sale ? (
-                  <TextField name="salePrice" label="Sale price (GH₵)" required placeholder="e.g. 200,000" inputMode="decimal" />
+                  <TextField
+                    name="salePrice"
+                    label="Sale price (GH₵)"
+                    required
+                    placeholder="e.g. 200,000"
+                    inputMode="decimal"
+                  />
                 ) : (
                   <>
-                    <TextField name="dailyRate" label="Daily rental rate (GH₵)" required placeholder="e.g. 650" inputMode="decimal" />
-                    <TextField name="securityDeposit" label="Security deposit (GH₵)" placeholder="e.g. 1,000" inputMode="decimal" />
+                    <TextField
+                      name="dailyRate"
+                      label="Daily rental rate (GH₵)"
+                      required
+                      placeholder="e.g. 650"
+                      inputMode="decimal"
+                    />
+                    <TextField
+                      name="securityDeposit"
+                      label="Security deposit (GH₵)"
+                      placeholder="e.g. 1,000"
+                      inputMode="decimal"
+                    />
                   </>
                 )}
               </div>
             </section>
+
+            {sale ? (
+              <section className={`flex flex-col gap-6 ${dividerClass} pt-8`}>
+                <h2 className="text-lg leading-6 text-foreground">Homepage</h2>
+                <FeatureOnHomepage />
+              </section>
+            ) : null}
 
             <section className={`flex flex-col gap-6 ${dividerClass} pt-8`}>
               <h2 className="text-lg leading-6 text-foreground">Identification &amp; location</h2>
@@ -279,7 +355,11 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
                 <TextField name="location" label="Vehicle location" required placeholder="e.g. Accra" />
                 <TextField name="registration" label="Registration number" placeholder="Enter registration" />
               </div>
-              <TextAreaField name="description" label="Description" placeholder="Describe the vehicle's features and condition..." />
+              <TextAreaField
+                name="description"
+                label="Description"
+                placeholder="Describe the vehicle's features and condition..."
+              />
             </section>
           </div>
         ) : null}
@@ -289,7 +369,10 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
             <ImageZone
               title="Interior Images"
               label="Vehicle Interior"
-              hint={["Upload 3–6 shots of seats, dashboard, trunk, or infotainment", "Recommended: 1200x800px, clear daylight photos"]}
+              hint={[
+                "Upload 3–6 shots of seats, dashboard, trunk, or infotainment",
+                "Recommended: 1200x800px, clear daylight photos",
+              ]}
               max={MAX_IMAGES.interior}
               images={images.interior}
               onChange={(interior) => setImages((current) => ({ ...current, interior }))}
@@ -297,7 +380,10 @@ export function VehicleWizard({ edit }: { edit?: EditVehicle }) {
             <ImageZone
               title="Exterior Images"
               label="Vehicle Exterior"
-              hint={["Upload 1–5 high-quality exterior shots (front, side, rear, angle)", "Recommended: 1200x800px, clear daylight photos"]}
+              hint={[
+                "Upload 1–5 high-quality exterior shots (front, side, rear, angle)",
+                "Recommended: 1200x800px, clear daylight photos",
+              ]}
               note="Upload multiple exterior images to create a rotating 360° view of the vehicle. We recommend uploading 8–12 clear images showing the car from different angles."
               max={MAX_IMAGES.exterior}
               images={images.exterior}

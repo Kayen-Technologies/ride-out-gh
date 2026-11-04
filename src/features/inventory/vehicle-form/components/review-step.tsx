@@ -21,7 +21,11 @@ function ReviewSection({ title, rows, onEdit }: { title: string; rows: Row[]; on
     <section className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <h2 className="text-sm leading-5 font-medium text-foreground">{title}</h2>
-        <button type="button" onClick={onEdit} className="text-sm leading-5 font-medium text-foreground underline underline-offset-2 hover:text-primary">
+        <button
+          type="button"
+          onClick={onEdit}
+          className="text-sm leading-5 font-medium text-foreground underline underline-offset-2 hover:text-primary"
+        >
           Edit
         </button>
       </div>
@@ -71,6 +75,18 @@ export function ReviewStep({
       price ? (sale ? formatGHS(price) : formatVehicleRentPrice(price)) : NOT_PROVIDED,
     ],
     ...(sale ? [] : ([["Security deposit", deposit ? formatGHS(deposit) : NOT_PROVIDED]] as Row[])),
+    ...(sale
+      ? ([
+          [
+            "Homepage",
+            values.featured
+              ? /^\d{1,3}$/.test(values.featuredOrder.trim())
+                ? `Featured, position ${values.featuredOrder.trim()}`
+                : "Featured"
+              : "Not featured",
+          ],
+        ] as Row[])
+      : []),
     ["Location", values.location || NOT_PROVIDED],
     ["Registration", values.registration || NOT_PROVIDED],
   ];
@@ -84,7 +100,11 @@ export function ReviewStep({
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <h2 className="text-sm leading-5 font-medium text-foreground">Images</h2>
-          <button type="button" onClick={() => goTo(3)} className="text-sm leading-5 font-medium text-foreground underline underline-offset-2 hover:text-primary">
+          <button
+            type="button"
+            onClick={() => goTo(3)}
+            className="text-sm leading-5 font-medium text-foreground underline underline-offset-2 hover:text-primary"
+          >
             Edit
           </button>
         </div>

@@ -38,9 +38,7 @@ export function SaveResultDialog({
     <Dialog open={outcome !== null} onOpenChange={(open) => !open && onViewInventory()}>
       <DialogPortal>
         <DialogOverlay />
-        <DialogPrimitive.Content
-          className="fixed top-1/2 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-[449px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-6 rounded-3xl bg-black px-4 pt-5 pb-8 text-center text-foreground outline-none sm:px-8"
-        >
+        <DialogPrimitive.Content className="fixed top-1/2 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-[449px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-6 rounded-3xl bg-black px-4 pt-5 pb-8 text-center text-foreground outline-none sm:px-8">
           <DialogPrimitive.Close asChild>
             <button
               type="button"
@@ -67,15 +65,29 @@ export function SaveResultDialog({
           <div className="flex w-full flex-col gap-3">
             {live ? (
               <>
-                <Button type="button" onClick={onViewInventory} className="h-12 w-full rounded-full bg-primary text-base font-medium text-black hover:bg-primary/90">
+                <Button
+                  type="button"
+                  onClick={onViewInventory}
+                  className="h-12 w-full rounded-full bg-primary text-base font-medium text-black hover:bg-primary/90"
+                >
                   View vehicle in inventory
                 </Button>
-                <Button type="button" variant="outline" onClick={onAddAnother} className="h-12 w-full rounded-full border-white bg-transparent text-base font-medium text-white hover:bg-white/10 dark:border-white dark:bg-transparent dark:hover:bg-white/10">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onAddAnother}
+                  className="h-12 w-full rounded-full border-white bg-transparent text-base font-medium text-white hover:bg-white/10 dark:border-white dark:bg-transparent dark:hover:bg-white/10"
+                >
                   Add another vehicle
                 </Button>
               </>
             ) : (
-              <Button type="button" variant="outline" onClick={onViewInventory} className="h-12 w-full rounded-full border-white bg-transparent text-base font-medium text-white hover:bg-white/10 dark:border-white dark:bg-transparent dark:hover:bg-white/10">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onViewInventory}
+                className="h-12 w-full rounded-full border-white bg-transparent text-base font-medium text-white hover:bg-white/10 dark:border-white dark:bg-transparent dark:hover:bg-white/10"
+              >
                 Back to inventory
               </Button>
             )}

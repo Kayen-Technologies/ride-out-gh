@@ -1,5 +1,7 @@
 "use server";
 
+import { updateTag } from "next/cache";
+
 import { getStaffSession } from "@/features/auth/session";
 import { saveVehicleInputSchema, basicInfoSchema, vehicleFormSchema } from "@/features/inventory/vehicle-form/schema";
 import { buildVehicleColumns } from "@/features/inventory/vehicle-form/vehicle-columns";
@@ -8,7 +10,10 @@ import type { Database } from "@/lib/supabase/database.types";
 
 type Result = { ok: true } | { ok: false; error: string };
 
-const notStaff: Result = { ok: false, error: "You need to be signed in as staff to do this." };
+const notStaff: Result = {
+  ok: false,
+  error: "You need to be signed in as staff to do this.",
+};
 
 function firstIssue(error: { issues: { message: string }[] }) {
   return error.issues[0]?.message ?? "Check the details and try again.";
@@ -34,7 +39,11 @@ export async function updateVehicle(rawInput: unknown): Promise<Result> {
   if (!(await requireStaff())) return notStaff;
 
   const input = saveVehicleInputSchema.omit({ intent: true }).safeParse(rawInput);
-  if (!input.success) return { ok: false, error: "Something went wrong with the form. Refresh and try again." };
+  if (!input.success)
+    return {
+      ok: false,
+      error: "Something went wrong with the form. Refresh and try again.",
+    };
   const { id, images } = input.data;
 
   const supabase = await createClient();
@@ -54,7 +63,10 @@ export async function updateVehicle(rawInput: unknown): Promise<Result> {
     const full = vehicleFormSchema.safeParse(input.data.values);
     if (!full.success) return { ok: false, error: firstIssue(full.error) };
     if (!images.some((image) => image.category === "exterior")) {
-      return { ok: false, error: "A published vehicle needs at least one exterior photo." };
+      return {
+        ok: false,
+        error: "A published vehicle needs at least one exterior photo.",
+      };
     }
     values = full.data;
   }
@@ -70,7 +82,10 @@ export async function updateVehicle(rawInput: unknown): Promise<Result> {
   const { error } = await supabase.from("vehicles").update(columns).eq("id", id);
   if (error) return { ok: false, error: error.message };
 
-  const { data: stored } = await supabase.from("vehicle_images").select("storage_path, blur_data_url").eq("vehicle_id", id);
+  const { data: stored } = await supabase
+    .from("vehicle_images")
+    .select("storage_path, blur_data_url")
+    .eq("vehicle_id", id);
   const storedPaths = (stored ?? []).map((row) => row.storage_path);
 
   // Rewrite the photo rows in the new order: exterior first, the first photo is the cover.
@@ -93,9 +108,18 @@ export async function updateVehicle(rawInput: unknown): Promise<Result> {
     if (insertError) {
       // Put the old rows back so the vehicle is not left without photos.
       await supabase.from("vehicle_images").insert(
-        (stored ?? []).map((row, index) => ({ vehicle_id: id, storage_path: row.storage_path, sort_order: index, is_cover: index === 0, blur_data_url: row.blur_data_url })),
+        (stored ?? []).map((row, index) => ({
+          vehicle_id: id,
+          storage_path: row.storage_path,
+          sort_order: index,
+          is_cover: index === 0,
+          blur_data_url: row.blur_data_url,
+        })),
       );
-      return { ok: false, error: `The photos could not be saved: ${insertError.message}` };
+      return {
+        ok: false,
+        error: `The photos could not be saved: ${insertError.message}`,
+      };
     }
   }
 
@@ -103,6 +127,7 @@ export async function updateVehicle(rawInput: unknown): Promise<Result> {
   const removed = storedPaths.filter((path) => !kept.has(path));
   if (removed.length > 0) await supabase.storage.from(BUCKET).remove(removed);
 
+  updateTag("vehicles");
   return { ok: true };
 }
 
@@ -128,6 +153,7 @@ export async function deleteVehicle(id: unknown): Promise<Result> {
 
   const paths = (stored ?? []).map((row) => row.storage_path);
   if (paths.length > 0) await supabase.storage.from(BUCKET).remove(paths);
+  updateTag("vehicles");
   return { ok: true };
 }
 
@@ -169,7 +195,9 @@ export async function setListingStatus(id: unknown, status: unknown): Promise<Re
       published_at: status === "published" ? (vehicle.published_at ?? new Date().toISOString()) : vehicle.published_at,
     })
     .eq("id", id);
-  return error ? { ok: false, error: error.message } : { ok: true };
+  if (error) return { ok: false, error: error.message };
+  updateTag("vehicles");
+  return { ok: true };
 }
 
 const availabilityValues: Database["public"]["Enums"]["availability_status"][] = [
@@ -189,7 +217,11 @@ export async function setAvailability(id: unknown, status: unknown): Promise<Res
   const supabase = await createClient();
   const { error } = await supabase
     .from("vehicles")
-    .update({ availability_status: status as (typeof availabilityValues)[number] })
+    .update({
+      availability_status: status as (typeof availabilityValues)[number],
+    })
     .eq("id", id);
-  return error ? { ok: false, error: error.message } : { ok: true };
+  if (error) return { ok: false, error: error.message };
+  updateTag("vehicles");
+  return { ok: true };
 }

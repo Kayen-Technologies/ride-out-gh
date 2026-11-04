@@ -1,11 +1,6 @@
 import "server-only";
 
-import {
-  BODY_TYPES,
-  FUEL_TYPES,
-  TRANSMISSIONS,
-  parseMoney,
-} from "@/features/inventory/vehicle-form/schema";
+import { BODY_TYPES, FUEL_TYPES, TRANSMISSIONS, parseMoney } from "@/features/inventory/vehicle-form/schema";
 import type { Database } from "@/lib/supabase/database.types";
 
 type VehicleUpdate = Database["public"]["Tables"]["vehicles"]["Update"];
@@ -16,7 +11,13 @@ type VehicleUpdate = Database["public"]["Tables"]["vehicles"]["Update"];
  */
 export function buildVehicleColumns(
   values: Record<string, unknown>,
-  basics: { brand: string; model: string; year: number; purpose: "sale" | "rent"; condition: "brand_new" | "used" },
+  basics: {
+    brand: string;
+    model: string;
+    year: number;
+    purpose: "sale" | "rent";
+    condition: "brand_new" | "used";
+  },
 ): VehicleUpdate {
   const text = (key: string) => {
     const value = values[key];
@@ -31,6 +32,9 @@ export function buildVehicleColumns(
   const salePrice = parseMoney(String(values.salePrice ?? ""));
   const dailyRate = parseMoney(String(values.dailyRate ?? ""));
   const deposit = parseMoney(String(values.securityDeposit ?? ""));
+  // Only cars for sale appear in the homepage search block, so a rental is never marked featured.
+  const featured = basics.purpose === "sale" && values.featured === true;
+  const orderText = String(values.featuredOrder ?? "").trim();
 
   return {
     listing_purpose: basics.purpose,
@@ -49,5 +53,7 @@ export function buildVehicleColumns(
     sale_price: basics.purpose === "sale" ? salePrice : null,
     rental_daily_rate: basics.purpose === "rent" ? dailyRate : null,
     rental_security_deposit: basics.purpose === "rent" ? deposit : null,
+    is_featured: featured,
+    featured_order: featured && /^\d{1,3}$/.test(orderText) ? Number(orderText) : null,
   };
 }
